@@ -1,0 +1,6 @@
+{
+  "name": "DOTE5110 Statistical Analysis - Presentation Facilitator",
+  "description": "Classroom presentation manager with proportional group-size timer, random group picker, Google Forms hub, Web Audio chime, and projector mode.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
