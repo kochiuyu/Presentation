@@ -102,6 +102,9 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
   const isQaWarning = qaSecondsRemaining <= 60 && qaSecondsRemaining > 0;
 
   const formatTime = (secs: number) => {
+    if (typeof secs !== 'number' || !Number.isFinite(secs) || isNaN(secs)) {
+      return '00:00';
+    }
     const isNeg = secs < 0;
     const abs = Math.abs(secs);
     const m = Math.floor(abs / 60);
@@ -385,7 +388,7 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
                 <span>{presIsRunning ? 'Pause Pres (Space)' : 'Start Pres (Space)'}</span>
               </button>
               <button
-                onClick={onResetPresTimer}
+                onClick={() => onResetPresTimer()}
                 className="rounded-xl border border-slate-700 bg-slate-800 px-3 py-2 text-xs font-semibold text-slate-300 hover:bg-slate-700"
                 title="Reset Presentation Clock"
               >
@@ -438,7 +441,7 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
                 <span>{qaIsRunning ? 'Pause Q&A (Q)' : 'Start Q&A (Q)'}</span>
               </button>
               <button
-                onClick={onResetQaTimer}
+                onClick={() => onResetQaTimer()}
                 className="rounded-xl border border-slate-700 bg-slate-800 px-3 py-2 text-xs font-semibold text-slate-300 hover:bg-slate-700"
                 title="Reset Q&A Clock"
               >

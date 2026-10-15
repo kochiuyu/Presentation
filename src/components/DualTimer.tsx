@@ -82,6 +82,9 @@ export const DualTimer: React.FC<DualTimerProps> = ({
     : qaMinutes;
 
   const formatTime = (secs: number) => {
+    if (typeof secs !== 'number' || !Number.isFinite(secs) || isNaN(secs)) {
+      return '00:00';
+    }
     const isNeg = secs < 0;
     const abs = Math.abs(secs);
     const m = Math.floor(abs / 60);
@@ -249,7 +252,7 @@ export const DualTimer: React.FC<DualTimerProps> = ({
               </button>
 
               <button
-                onClick={onResetPresTimer}
+                onClick={() => onResetPresTimer()}
                 className="flex items-center justify-center gap-1 rounded-xl border border-slate-700 bg-slate-800 px-2.5 py-2.5 text-xs font-semibold text-slate-300 hover:bg-slate-700 hover:text-white transition"
                 title="Reset presentation timer"
               >
@@ -427,7 +430,7 @@ export const DualTimer: React.FC<DualTimerProps> = ({
               </button>
 
               <button
-                onClick={onResetQaTimer}
+                onClick={() => onResetQaTimer()}
                 className="flex items-center justify-center gap-1 rounded-xl border border-slate-700 bg-slate-800 px-2.5 py-2.5 text-xs font-semibold text-slate-300 hover:bg-slate-700 hover:text-white transition"
                 title="Reset Q&A timer"
               >

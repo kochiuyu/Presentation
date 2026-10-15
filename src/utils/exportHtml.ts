@@ -748,6 +748,7 @@ DataPandas,HAO Chunhui (Nick) ,CHEUNG Kai leuk (Ken),ZHANG Jiamin Cathie,LEE Chu
     }
 
     function formatTime(secs) {
+      if (typeof secs !== 'number' || !Number.isFinite(secs) || isNaN(secs)) return '00:00';
       const isNeg = secs < 0;
       const abs = Math.abs(secs);
       const m = Math.floor(abs / 60);

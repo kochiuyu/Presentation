@@ -147,19 +147,22 @@ export default function App() {
   }, []);
 
   // Reset Presentation Timer
+  // Reset Presentation Timer (Strictly checks customMinutes to prevent SyntheticEvent becoming NaN)
   const handleResetPresTimer = useCallback(
-    (customMinutes?: number) => {
+    (customMinutes?: unknown) => {
       setPresIsRunning(false);
       hasWarnedPresRef.current = false;
       const mins =
-        customMinutes ??
-        computePresentationMinutes(
-          session.currentGroup,
-          session.presTimingMode,
-          session.presMinutesPerMember,
-          session.presentationMinutes
-        );
-      setPresSecondsRemaining(Math.round(mins * 60));
+        typeof customMinutes === 'number' && Number.isFinite(customMinutes)
+          ? customMinutes
+          : computePresentationMinutes(
+              session.currentGroup,
+              session.presTimingMode,
+              session.presMinutesPerMember,
+              session.presentationMinutes
+            );
+      const safeMins = typeof mins === 'number' && Number.isFinite(mins) && mins >= 0 ? mins : 14;
+      setPresSecondsRemaining(Math.round(safeMins * 60));
     },
     [session.currentGroup, session.presTimingMode, session.presMinutesPerMember, session.presentationMinutes]
   );
@@ -175,20 +178,22 @@ export default function App() {
     });
   }, [presIsRunning]);
 
-  // Reset Q&A Timer
+  // Reset Q&A Timer (Strictly checks customMinutes to prevent SyntheticEvent becoming NaN)
   const handleResetQaTimer = useCallback(
-    (customMinutes?: number) => {
+    (customMinutes?: unknown) => {
       setQaIsRunning(false);
       hasWarnedQaRef.current = false;
       const mins =
-        customMinutes ??
-        computeQaMinutes(
-          session.currentGroup,
-          session.qaTimingMode,
-          session.qaMinutes,
-          session.qaMinutesPerMember
-        );
-      setQaSecondsRemaining(Math.round(mins * 60));
+        typeof customMinutes === 'number' && Number.isFinite(customMinutes)
+          ? customMinutes
+          : computeQaMinutes(
+              session.currentGroup,
+              session.qaTimingMode,
+              session.qaMinutes,
+              session.qaMinutesPerMember
+            );
+      const safeMins = typeof mins === 'number' && Number.isFinite(mins) && mins >= 0 ? mins : 5;
+      setQaSecondsRemaining(Math.round(safeMins * 60));
     },
     [session.currentGroup, session.qaTimingMode, session.qaMinutes, session.qaMinutesPerMember]
   );
