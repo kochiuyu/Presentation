@@ -76,6 +76,13 @@ export const SetupPanel: React.FC<SetupPanelProps> = ({
   const parsedItems = parseRosterInput(rawText);
 
   const handleInit = () => {
+    const invalidTimeInput = Array.from(document.querySelectorAll<HTMLInputElement>('input[type="number"]'))
+      .find((input) => !input.checkValidity());
+    if (invalidTimeInput) {
+      invalidTimeInput.reportValidity();
+      return;
+    }
+
     const formUrl = peerUrl.trim();
     if (formUrl) {
       try {
