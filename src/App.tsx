@@ -17,8 +17,28 @@ import { playChime, playWarningChime, playTick, playFanfare } from './utils/audi
 import { SessionState, GroupItem, TimingMode, computePresentationMinutes, computeQaMinutes } from './types';
 import confetti from 'canvas-confetti';
 
+const CLOCK_KEY = 'presentation_facilitator_clocks_v1';
+
+function loadClocks(groupId: string | null) {
+  try {
+    const value = JSON.parse(localStorage.getItem(CLOCK_KEY) || 'null');
+    if (value?.groupId !== groupId) return null;
+    if (!Number.isFinite(value.presSeconds) || !Number.isFinite(value.qaSeconds)) return null;
+    return {
+      groupId: value.groupId as string | null,
+      presSeconds: value.presSeconds as number,
+      qaSeconds: value.qaSeconds as number,
+      presDeadline: Number.isFinite(value.presDeadline) ? value.presDeadline as number : null,
+      qaDeadline: Number.isFinite(value.qaDeadline) ? value.qaDeadline as number : null,
+    };
+  } catch {
+    return null;
+  }
+}
+
 export default function App() {
   const [session, setSession] = useState<SessionState>(() => loadSessionState());
+  const [savedClocks] = useState(() => loadClocks(session.currentGroup?.id ?? null));
 
   // Centralized Group Draw Animation State
   const [isDrawingGroup, setIsDrawingGroup] = useState<boolean>(false);
@@ -32,9 +52,11 @@ export default function App() {
       session.presMinutesPerMember,
       session.presentationMinutes
     );
-    return Math.round(mins * 60);
+    return savedClocks?.presDeadline
+      ? Math.ceil((savedClocks.presDeadline - Date.now()) / 1000)
+      : savedClocks?.presSeconds ?? Math.round(mins * 60);
   });
-  const [presIsRunning, setPresIsRunning] = useState<boolean>(false);
+  const [presIsRunning, setPresIsRunning] = useState<boolean>(Boolean(savedClocks?.presDeadline));
 
   // Independent Q&A Timer State
   const [qaSecondsRemaining, setQaSecondsRemaining] = useState<number>(() => {
@@ -44,9 +66,11 @@ export default function App() {
       session.qaMinutes,
       session.qaMinutesPerMember
     );
-    return Math.round(mins * 60);
+    return savedClocks?.qaDeadline
+      ? Math.ceil((savedClocks.qaDeadline - Date.now()) / 1000)
+      : savedClocks?.qaSeconds ?? Math.round(mins * 60);
   });
-  const [qaIsRunning, setQaIsRunning] = useState<boolean>(false);
+  const [qaIsRunning, setQaIsRunning] = useState<boolean>(Boolean(savedClocks?.qaDeadline));
 
   // Q&A Respondent State
   const [currentRespondent, setCurrentRespondent] = useState<string | null>(session.currentRespondent ?? null);
@@ -62,6 +86,8 @@ export default function App() {
   });
 
   const timerIntervalRef = useRef<number | null>(null);
+  const presDeadlineRef = useRef<number | null>(savedClocks?.presDeadline ?? null);
+  const qaDeadlineRef = useRef<number | null>(savedClocks?.qaDeadline ?? null);
   const groupDrawTimeoutRef = useRef<number | null>(null);
   const groupDrawGenerationRef = useRef(0);
   const hasWarnedPresRef = useRef<boolean>(false);
@@ -76,6 +102,20 @@ export default function App() {
     });
   }, [session, currentRespondent, answeredMembers]);
 
+  useEffect(() => {
+    try {
+      localStorage.setItem(CLOCK_KEY, JSON.stringify({
+        groupId: session.currentGroup?.id ?? null,
+        presSeconds: presSecondsRemaining,
+        qaSeconds: qaSecondsRemaining,
+        presDeadline: presIsRunning ? presDeadlineRef.current : null,
+        qaDeadline: qaIsRunning ? qaDeadlineRef.current : null,
+      }));
+    } catch {
+      // Storage can be unavailable in private browsing.
+    }
+  }, [session.currentGroup?.id, presSecondsRemaining, qaSecondsRemaining, presIsRunning, qaIsRunning]);
+
   // Master Timer Tick (handles both independent clocks)
   useEffect(() => {
     const anyRunning = presIsRunning || qaIsRunning;
@@ -85,14 +125,14 @@ export default function App() {
         // Presentation Clock
         if (presIsRunning) {
           setPresSecondsRemaining((prev) => {
-            const next = prev - 1;
+            const next = Math.ceil(((presDeadlineRef.current ?? Date.now()) - Date.now()) / 1000);
 
-            if (next === 60 && !hasWarnedPresRef.current) {
+            if (prev > 60 && next <= 60 && next > 0 && !hasWarnedPresRef.current) {
               hasWarnedPresRef.current = true;
               if (session.soundEnabled) playWarningChime(session.volume);
             }
 
-            if (next === 0) {
+            if (prev > 0 && next <= 0) {
               if (session.soundEnabled) playChime(session.volume);
               try {
                 confetti({ particleCount: 60, spread: 70, origin: { y: 0.6 } });
@@ -108,14 +148,14 @@ export default function App() {
         // Q&A Clock
         if (qaIsRunning) {
           setQaSecondsRemaining((prev) => {
-            const next = prev - 1;
+            const next = Math.ceil(((qaDeadlineRef.current ?? Date.now()) - Date.now()) / 1000);
 
-            if (next === 60 && !hasWarnedQaRef.current) {
+            if (prev > 60 && next <= 60 && next > 0 && !hasWarnedQaRef.current) {
               hasWarnedQaRef.current = true;
               if (session.soundEnabled) playWarningChime(session.volume);
             }
 
-            if (next === 0) {
+            if (prev > 0 && next <= 0) {
               if (session.soundEnabled) playChime(session.volume);
               try {
                 confetti({ particleCount: 50, spread: 60, origin: { y: 0.6 } });
@@ -145,14 +185,22 @@ export default function App() {
 
   // Toggle Presentation Timer
   const handleTogglePresTimer = useCallback(() => {
-    setPresIsRunning((prev) => !prev);
-  }, []);
+    if (presIsRunning) {
+      if (presDeadlineRef.current !== null) setPresSecondsRemaining(Math.ceil((presDeadlineRef.current - Date.now()) / 1000));
+      presDeadlineRef.current = null;
+      setPresIsRunning(false);
+    } else {
+      presDeadlineRef.current = Date.now() + presSecondsRemaining * 1000;
+      setPresIsRunning(true);
+    }
+  }, [presIsRunning, presSecondsRemaining]);
 
   // Reset Presentation Timer
   // Reset Presentation Timer (Strictly checks customMinutes to prevent SyntheticEvent becoming NaN)
   const handleResetPresTimer = useCallback(
     (customMinutes?: unknown) => {
       setPresIsRunning(false);
+      presDeadlineRef.current = null;
       hasWarnedPresRef.current = false;
       const mins =
         typeof customMinutes === 'number' && Number.isFinite(customMinutes)
@@ -171,19 +219,26 @@ export default function App() {
 
   // Toggle Q&A Timer
   const handleToggleQaTimer = useCallback(() => {
-    setQaIsRunning((prev) => {
-      const next = !prev;
-      if (next && presIsRunning) {
+    if (qaIsRunning) {
+      if (qaDeadlineRef.current !== null) setQaSecondsRemaining(Math.ceil((qaDeadlineRef.current - Date.now()) / 1000));
+      qaDeadlineRef.current = null;
+      setQaIsRunning(false);
+    } else {
+      qaDeadlineRef.current = Date.now() + qaSecondsRemaining * 1000;
+      setQaIsRunning(true);
+      if (presIsRunning) {
+        if (presDeadlineRef.current !== null) setPresSecondsRemaining(Math.ceil((presDeadlineRef.current - Date.now()) / 1000));
+        presDeadlineRef.current = null;
         setPresIsRunning(false);
       }
-      return next;
-    });
-  }, [presIsRunning]);
+    }
+  }, [qaIsRunning, qaSecondsRemaining, presIsRunning]);
 
   // Reset Q&A Timer (Strictly checks customMinutes to prevent SyntheticEvent becoming NaN)
   const handleResetQaTimer = useCallback(
     (customMinutes?: unknown) => {
       setQaIsRunning(false);
+      qaDeadlineRef.current = null;
       hasWarnedQaRef.current = false;
       const mins =
         typeof customMinutes === 'number' && Number.isFinite(customMinutes)
@@ -231,6 +286,7 @@ export default function App() {
 
       // Reset presentation clock for this group's member count
       setPresIsRunning(false);
+      presDeadlineRef.current = null;
       hasWarnedPresRef.current = false;
       const newPresMins = computePresentationMinutes(
         updatedPicked,
@@ -242,6 +298,7 @@ export default function App() {
 
       // Reset Q&A clock
       setQaIsRunning(false);
+      qaDeadlineRef.current = null;
       hasWarnedQaRef.current = false;
       const newQaMins = computeQaMinutes(
         updatedPicked,
@@ -377,6 +434,7 @@ export default function App() {
 
     // 5. Reset Presentation Clock to fresh default (no group on stage)
     setPresIsRunning(false);
+    presDeadlineRef.current = null;
     hasWarnedPresRef.current = false;
     const cleanPresMins = computePresentationMinutes(
       null,
@@ -388,6 +446,7 @@ export default function App() {
 
     // 6. Reset Q&A Clock to fresh default
     setQaIsRunning(false);
+    qaDeadlineRef.current = null;
     hasWarnedQaRef.current = false;
     const cleanQaMins = computeQaMinutes(
       null,
@@ -435,16 +494,21 @@ export default function App() {
       qaFormUrl?: string;
       peerEvalFormUrl: string;
     }) => {
-      cancelGroupDraw();
+      const rosterChanged = params.rawGroupInput.trim() !== session.rawGroupInput.trim();
+      if (rosterChanged && (session.currentGroup || session.presentedGroups.length > 0) &&
+          !window.confirm('Changing the roster will clear presentation progress and reset both timers. Continue?')) {
+        return false;
+      }
+      if (rosterChanged) cancelGroupDraw();
       const updatedSession: SessionState = {
         ...session,
         courseTitle: params.courseTitle,
         rawGroupInput: params.rawGroupInput,
-        pendingGroups: params.pendingGroups,
-        presentedGroups: [],
-        currentGroup: null,
-        currentRespondent: null,
-        answeredMembers: [],
+        pendingGroups: rosterChanged ? params.pendingGroups : session.pendingGroups,
+        presentedGroups: rosterChanged ? [] : session.presentedGroups,
+        currentGroup: rosterChanged ? null : session.currentGroup,
+        currentRespondent: rosterChanged ? null : currentRespondent,
+        answeredMembers: rosterChanged ? [] : answeredMembers,
         presTimingMode: params.presTimingMode,
         presMinutesPerMember: params.presMinutesPerMember,
         presentationMinutes: params.presentationMinutes,
@@ -456,11 +520,13 @@ export default function App() {
       };
 
       setSession(updatedSession);
+      if (!rosterChanged) return true;
       setCurrentRespondent(null);
       setAnsweredMembers([]);
 
       // Reset presentation timer
       setPresIsRunning(false);
+      presDeadlineRef.current = null;
       const presM = computePresentationMinutes(
         null,
         params.presTimingMode,
@@ -471,10 +537,12 @@ export default function App() {
 
       // Reset Q&A timer
       setQaIsRunning(false);
+      qaDeadlineRef.current = null;
       const qaM = computeQaMinutes(null, params.qaTimingMode, params.qaMinutes, params.qaMinutesPerMember);
       setQaSecondsRemaining(Math.round(qaM * 60));
+      return true;
     },
-    [session, cancelGroupDraw]
+    [session, currentRespondent, answeredMembers, cancelGroupDraw]
   );
 
   // Set Presentation Rate
@@ -486,6 +554,7 @@ export default function App() {
         presMinutesPerMember: rate,
       }));
       setPresIsRunning(false);
+      presDeadlineRef.current = null;
       const newMins = computePresentationMinutes(session.currentGroup, 'per_member', rate, session.presentationMinutes);
       setPresSecondsRemaining(Math.round(newMins * 60));
     },
@@ -501,6 +570,7 @@ export default function App() {
         qaMinutes: qaMin,
       }));
       setQaIsRunning(false);
+      qaDeadlineRef.current = null;
       const newMins = isProportional
         ? computeQaMinutes(session.currentGroup, 'per_member', qaMin, 0.5)
         : qaMin;
@@ -599,6 +669,11 @@ export default function App() {
 
       {/* Main Container */}
       <main className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 space-y-6">
+        {session.pendingGroups.length === 0 && session.presentedGroups.length === 0 && (
+          <a href="#setup-section" className="block rounded-2xl border border-indigo-500/40 bg-indigo-950/40 px-5 py-4 text-sm font-semibold text-indigo-100 hover:bg-indigo-950/70 focus:outline-none focus:ring-2 focus:ring-indigo-400">
+            Add your groups in Classroom Setup to begin <span aria-hidden="true">↓</span>
+          </a>
+        )}
         {/* Top Section: Group Picker (Left) & Separated Timers + Q&A Respondent Draw (Right) */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           <div className="lg:col-span-5">
@@ -625,7 +700,10 @@ export default function App() {
               presentationMinutes={session.presentationMinutes}
               onTogglePresTimer={handleTogglePresTimer}
               onResetPresTimer={handleResetPresTimer}
-              onAdjustPresSeconds={(delta) => setPresSecondsRemaining((prev) => prev + delta)}
+              onAdjustPresSeconds={(delta) => {
+                if (presDeadlineRef.current !== null) presDeadlineRef.current += delta * 1000;
+                setPresSecondsRemaining((prev) => prev + delta);
+              }}
               onSetPresPerMember={handleSetPresPerMember}
 
               qaSecondsRemaining={qaSecondsRemaining}
@@ -635,7 +713,10 @@ export default function App() {
               qaMinutesPerMember={session.qaMinutesPerMember}
               onToggleQaTimer={handleToggleQaTimer}
               onResetQaTimer={handleResetQaTimer}
-              onAdjustQaSeconds={(delta) => setQaSecondsRemaining((prev) => prev + delta)}
+              onAdjustQaSeconds={(delta) => {
+                if (qaDeadlineRef.current !== null) qaDeadlineRef.current += delta * 1000;
+                setQaSecondsRemaining((prev) => prev + delta);
+              }}
               onSetQaDuration={handleSetQaDuration}
 
               currentRespondent={currentRespondent}

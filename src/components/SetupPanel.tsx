@@ -27,7 +27,7 @@ interface SetupPanelProps {
     qaMinutesPerMember: number;
     qaFormUrl?: string;
     peerEvalFormUrl: string;
-  }) => void;
+  }) => boolean;
 }
 
 export const SetupPanel: React.FC<SetupPanelProps> = ({
@@ -70,7 +70,7 @@ export const SetupPanel: React.FC<SetupPanelProps> = ({
   const parsedItems = parseRosterInput(rawText);
 
   const handleInit = () => {
-    onInitialize({
+    const saved = onInitialize({
       courseTitle: courseTitle.trim() || 'Presentation Session',
       rawGroupInput: rawText,
       pendingGroups: parsedItems,
@@ -83,8 +83,10 @@ export const SetupPanel: React.FC<SetupPanelProps> = ({
       peerEvalFormUrl: peerUrl.trim(),
     });
 
-    setJustSaved(true);
-    setTimeout(() => setJustSaved(false), 2500);
+    if (saved) {
+      setJustSaved(true);
+      setTimeout(() => setJustSaved(false), 2500);
+    }
   };
 
   const handleQuickSaveTitle = () => {
@@ -361,7 +363,7 @@ export const SetupPanel: React.FC<SetupPanelProps> = ({
             className="flex items-center gap-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 px-6 py-2.5 text-xs font-bold text-white shadow-md shadow-indigo-600/30 transition active:scale-95"
           >
             {justSaved ? <Check className="h-4 w-4 text-emerald-300" /> : <ListChecks className="h-4 w-4" />}
-            <span>{justSaved ? 'Changes Applied & Saved!' : 'Apply Changes & Initialize'}</span>
+            <span>{justSaved ? 'Changes Applied & Saved!' : 'Apply Changes & Save'}</span>
           </button>
         </div>
       </div>

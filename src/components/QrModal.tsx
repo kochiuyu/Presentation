@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import QRCode from 'qrcode';
 import { X, ExternalLink, Copy, Check } from 'lucide-react';
+import { useDialogFocus } from '../utils/useDialogFocus';
 
 interface QrModalProps {
   isOpen: boolean;
@@ -10,6 +11,7 @@ interface QrModalProps {
 }
 
 export const QrModal: React.FC<QrModalProps> = ({ isOpen, onClose, title, url }) => {
+  const dialogRef = useDialogFocus(isOpen);
   const [dataUrl, setDataUrl] = useState<string>('');
   const [copied, setCopied] = useState(false);
 
@@ -37,7 +39,7 @@ export const QrModal: React.FC<QrModalProps> = ({ isOpen, onClose, title, url })
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-xs p-4">
-      <div className="relative w-full max-w-sm rounded-2xl border border-slate-800 bg-slate-900 p-6 text-center text-slate-100 shadow-2xl">
+      <div ref={dialogRef} role="dialog" aria-modal="true" aria-labelledby="qr-dialog-title" tabIndex={-1} className="relative w-full max-w-sm rounded-2xl border border-slate-800 bg-slate-900 p-6 text-center text-slate-100 shadow-2xl">
         <button
           onClick={onClose}
           className="absolute right-4 top-4 rounded-lg p-1 text-slate-400 hover:bg-slate-800 hover:text-white transition"
@@ -46,7 +48,7 @@ export const QrModal: React.FC<QrModalProps> = ({ isOpen, onClose, title, url })
           <X className="h-5 w-5" />
         </button>
 
-        <h3 className="text-lg font-bold text-white">{title}</h3>
+        <h3 id="qr-dialog-title" className="text-lg font-bold text-white">{title}</h3>
         <p className="mt-1 text-xs text-slate-400 truncate max-w-[280px] mx-auto">{url}</p>
 
         <div className="mt-4 flex items-center justify-center rounded-2xl bg-white p-4 shadow-inner mx-auto w-64 h-64">

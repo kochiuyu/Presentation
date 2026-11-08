@@ -1,5 +1,6 @@
 import React from 'react';
 import { X, Keyboard } from 'lucide-react';
+import { useDialogFocus } from '../utils/useDialogFocus';
 
 interface ShortcutsModalProps {
   isOpen: boolean;
@@ -7,6 +8,7 @@ interface ShortcutsModalProps {
 }
 
 export const ShortcutsModal: React.FC<ShortcutsModalProps> = ({ isOpen, onClose }) => {
+  const dialogRef = useDialogFocus(isOpen);
   if (!isOpen) return null;
 
   const shortcuts = [
@@ -22,7 +24,7 @@ export const ShortcutsModal: React.FC<ShortcutsModalProps> = ({ isOpen, onClose 
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-xs p-4">
-      <div className="relative w-full max-w-md rounded-2xl border border-slate-700 bg-slate-900 p-6 text-slate-100 shadow-2xl">
+      <div ref={dialogRef} role="dialog" aria-modal="true" aria-labelledby="shortcuts-dialog-title" tabIndex={-1} className="relative w-full max-w-md rounded-2xl border border-slate-700 bg-slate-900 p-6 text-slate-100 shadow-2xl">
         <button
           onClick={onClose}
           className="absolute right-4 top-4 rounded-lg p-1 text-slate-400 hover:bg-slate-800 hover:text-white transition"
@@ -36,7 +38,7 @@ export const ShortcutsModal: React.FC<ShortcutsModalProps> = ({ isOpen, onClose 
             <Keyboard className="h-5 w-5" />
           </div>
           <div>
-            <h3 className="font-bold text-lg text-white">Keyboard Shortcuts</h3>
+            <h3 id="shortcuts-dialog-title" className="font-bold text-lg text-white">Keyboard Shortcuts</h3>
             <p className="text-xs text-slate-400">Control your classroom session hands-free</p>
           </div>
         </div>
