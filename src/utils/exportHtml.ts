@@ -783,10 +783,14 @@ export function generateStandaloneHtml(): string {
         if (Number.isFinite(saved.presSeconds)) {
           presSeconds = Number.isFinite(saved.presDeadline)
             ? Math.ceil((saved.presDeadline - Date.now()) / 1000) : saved.presSeconds;
+          presDeadline = Number.isFinite(saved.presDeadline) ? saved.presDeadline : null;
+          presRunning = presDeadline !== null;
         }
         if (Number.isFinite(saved.qaSeconds)) {
           qaSeconds = Number.isFinite(saved.qaDeadline)
             ? Math.ceil((saved.qaDeadline - Date.now()) / 1000) : saved.qaSeconds;
+          qaDeadline = Number.isFinite(saved.qaDeadline) ? saved.qaDeadline : null;
+          qaRunning = qaDeadline !== null;
         }
       } catch(e) {}
     }
@@ -1387,6 +1391,27 @@ export function generateStandaloneHtml(): string {
       loadState();
       loadClocks();
       syncUI();
+      if (presRunning) {
+        document.getElementById('textPlayPres').textContent = 'Pause Pres (Space)';
+        document.getElementById('iconPlayPres').textContent = '⏸';
+        document.getElementById('btnTogglePres').classList.replace('bg-indigo-600', 'bg-amber-600');
+        document.getElementById('btnTogglePres').classList.replace('hover:bg-indigo-500', 'hover:bg-amber-500');
+        document.getElementById('tagPresStatus').textContent = '🎤 Pres Running';
+        document.getElementById('tagPresStatus').className = 'px-2 py-0.5 rounded text-[11px] font-semibold bg-indigo-500/20 border border-indigo-400 text-indigo-300 animate-pulse';
+        document.getElementById('cardPres').className = 'rounded-2xl border-2 border-indigo-500 bg-gradient-to-b from-indigo-950/40 via-slate-950 to-slate-950 ring-2 ring-indigo-500/30 p-4 flex flex-col justify-between transition-all';
+        document.getElementById('projCardPres').className = 'rounded-3xl border-2 border-indigo-400 bg-gradient-to-b from-indigo-950/50 to-slate-950 ring-4 ring-indigo-500/30 p-6 flex flex-col items-center justify-center transition-all';
+      }
+      if (qaRunning) {
+        document.getElementById('textPlayQa').textContent = 'Pause Q&A (Q)';
+        document.getElementById('iconPlayQa').textContent = '⏸';
+        document.getElementById('btnToggleQa').classList.replace('bg-emerald-600', 'bg-amber-600');
+        document.getElementById('btnToggleQa').classList.replace('hover:bg-emerald-500', 'hover:bg-amber-500');
+        document.getElementById('tagQaStatus').textContent = '💬 Q&A Running';
+        document.getElementById('tagQaStatus').className = 'px-2 py-0.5 rounded text-[11px] font-semibold bg-emerald-500/20 border border-emerald-400 text-emerald-300 animate-pulse';
+        document.getElementById('cardQa').className = 'rounded-2xl border-2 border-emerald-500 bg-gradient-to-b from-emerald-950/40 via-slate-950 to-slate-950 ring-2 ring-emerald-500/30 p-4 flex flex-col justify-between transition-all';
+        document.getElementById('projCardQa').className = 'rounded-3xl border-2 border-emerald-400 bg-gradient-to-b from-emerald-950/50 to-slate-950 ring-4 ring-emerald-500/30 p-6 flex flex-col items-center justify-center transition-all';
+      }
+      if (presRunning || qaRunning) startMasterTicker();
       saveClocks();
 
       document.getElementById('btnSoundToggle').addEventListener('click', () => {
