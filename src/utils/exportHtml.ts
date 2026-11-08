@@ -793,6 +793,7 @@ export function generateStandaloneHtml(): string {
     let isShufflingRespondent = false;
     let masterInterval = null;
     let isShuffling = false;
+    let groupDrawGeneration = 0;
 
     const CLOCK_KEY = 'presentation_facilitator_standalone_clocks_v1';
     function saveClocks() {
@@ -1125,6 +1126,7 @@ export function generateStandaloneHtml(): string {
 
       getAudioCtx();
       isShuffling = true;
+      const drawGeneration = ++groupDrawGeneration;
       const currentEl = document.getElementById('currentGroupName');
       const projNameEl = document.getElementById('projGroupName');
       const badgeEl = document.getElementById('groupBadge');
@@ -1140,6 +1142,7 @@ export function generateStandaloneHtml(): string {
       const totalSteps = 24;
 
       function step() {
+        if (drawGeneration !== groupDrawGeneration) return;
         const randIdx = Math.floor(Math.random() * state.pendingGroups.length);
         const candidate = state.pendingGroups[randIdx];
         currentEl.textContent = candidate.name;
@@ -1534,6 +1537,8 @@ export function generateStandaloneHtml(): string {
 
       function doResetAll() {
         if (confirm("Reset all groups and timers? All groups will return to pending pool for a fresh session.")) {
+          groupDrawGeneration++;
+          isShuffling = false;
           let all = parseRosterInput(state.rawGroupInput);
           if (!all || !all.length) {
             const seen = new Set();
@@ -1553,6 +1558,10 @@ export function generateStandaloneHtml(): string {
           state.answeredMembers = [];
           saveState();
           syncUI(true);
+          document.getElementById('projDrawBadge').classList.add('hidden');
+          document.getElementById('respondentNameTag').textContent = 'Press A or click below to pick';
+          document.getElementById('projRespondentName').textContent = 'Press A to Draw Member';
+          document.getElementById('answeredCountLabel').textContent = '0 answered';
         }
       }
 
