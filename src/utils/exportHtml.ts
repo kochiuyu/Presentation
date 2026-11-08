@@ -1,3 +1,7 @@
+import standaloneStyles from '../index.css?inline';
+import confettiSource from 'canvas-confetti/dist/confetti.browser.js?raw';
+import qrCodeSource from '../assets/standaloneQr.js?raw';
+
 /**
  * Generates a complete, single-file, 100% self-contained index.html
  * for GitHub Pages or offline local usage without any bundler.
@@ -11,10 +15,10 @@ export function generateStandaloneHtml(): string {
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Presentation Facilitator</title>
   <meta name="description" content="Classroom presentation manager with separated presentation & Q&A timers, proportional group-size duration, random group picker, random Q&A member draw, Google Forms hub, Web Audio chime, and projector mode.">
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+  <style>${standaloneStyles}</style>
+  <script>${confettiSource}</script>
+  <script>${qrCodeSource}</script>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700;800&display=swap');
     body { font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif; }
     .font-mono-numbers { font-family: 'JetBrains Mono', monospace; font-variant-numeric: tabular-nums; }
   </style>
@@ -55,6 +59,7 @@ export function generateStandaloneHtml(): string {
 
   <!-- Main Workspace -->
   <main class="flex-1 max-w-7xl w-full mx-auto p-4 md:p-6 lg:p-8 space-y-6">
+    <a id="setupPrompt" href="#setupSection" class="block rounded-2xl border border-indigo-500/40 bg-indigo-950/40 px-5 py-4 text-sm font-semibold text-indigo-100 hover:bg-indigo-950/70 focus:outline-none focus:ring-2 focus:ring-indigo-400">Add your groups in Classroom Setup to begin ↓</a>
     <!-- Top Row: Active Group Picker (5 cols) + Separated Timers (7 cols) -->
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
       
@@ -327,7 +332,7 @@ export function generateStandaloneHtml(): string {
       </section>
 
       <!-- Setup & Initialization Panel (7 cols) -->
-      <section class="lg:col-span-7 bg-slate-900 border border-slate-800 rounded-2xl p-5 md:p-6 shadow-xl">
+      <section id="setupSection" class="lg:col-span-7 bg-slate-900 border border-slate-800 rounded-2xl p-5 md:p-6 shadow-xl scroll-mt-20">
         <div class="flex items-center justify-between border-b border-slate-800 pb-3 mb-4">
           <div>
             <span class="text-xs uppercase tracking-wider font-bold text-sky-400">Class Setup & Timings</span>
@@ -527,7 +532,7 @@ export function generateStandaloneHtml(): string {
   </div>
 
   <!-- QR Code Modal -->
-  <div id="qrModal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-xs flex items-center justify-center p-4">
+  <div id="qrModal" role="dialog" aria-modal="true" aria-labelledby="qrModalTitle" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-xs flex items-center justify-center p-4">
     <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 max-w-sm w-full text-center shadow-2xl">
       <h3 id="qrModalTitle" class="text-lg font-bold text-white mb-1">Scan Form Link</h3>
       <p id="qrModalUrl" class="text-xs text-slate-400 mb-4 truncate"></p>
@@ -731,17 +736,60 @@ export function generateStandaloneHtml(): string {
       } catch(e) {}
     }
 
+    function escapeHtml(value) {
+      return String(value).replace(/[&<>"']/g, character => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+      })[character]);
+    }
+
+    function showRespondent(name) {
+      const tag = document.getElementById('respondentNameTag');
+      const span = document.createElement('span');
+      span.className = 'text-white bg-emerald-950/80 border border-emerald-600 px-2 py-0.5 rounded-md font-bold';
+      span.textContent = '🎯 ' + name;
+      tag.replaceChildren(span);
+    }
+
     let presSeconds = 16 * 60;
     let presRunning = false;
+    let presDeadline = null;
     let hasWarnedPres = false;
 
     let qaSeconds = 5 * 60;
     let qaRunning = false;
+    let qaDeadline = null;
     let hasWarnedQa = false;
 
     let isShufflingRespondent = false;
     let masterInterval = null;
     let isShuffling = false;
+
+    const CLOCK_KEY = 'presentation_facilitator_standalone_clocks_v1';
+    function saveClocks() {
+      try {
+        localStorage.setItem(CLOCK_KEY, JSON.stringify({
+          groupId: state.currentGroup?.id ?? null,
+          presSeconds, qaSeconds, presDeadline, qaDeadline
+        }));
+      } catch(e) {}
+    }
+
+    function loadClocks() {
+      presSeconds = Math.round(getPresMins() * 60);
+      qaSeconds = Math.round(getQaMins() * 60);
+      try {
+        const saved = JSON.parse(localStorage.getItem(CLOCK_KEY) || 'null');
+        if (!saved || saved.groupId !== (state.currentGroup?.id ?? null)) return;
+        if (Number.isFinite(saved.presSeconds)) {
+          presSeconds = Number.isFinite(saved.presDeadline)
+            ? Math.ceil((saved.presDeadline - Date.now()) / 1000) : saved.presSeconds;
+        }
+        if (Number.isFinite(saved.qaSeconds)) {
+          qaSeconds = Number.isFinite(saved.qaDeadline)
+            ? Math.ceil((saved.qaDeadline - Date.now()) / 1000) : saved.qaSeconds;
+        }
+      } catch(e) {}
+    }
 
     function getPresMins(group = state.currentGroup) {
       const memberCount = group && group.members && group.members.length > 0 ? group.members.length : 7;
@@ -824,36 +872,45 @@ export function generateStandaloneHtml(): string {
       if (masterInterval) return;
       masterInterval = setInterval(() => {
         if (presRunning) {
-          presSeconds--;
-          if (presSeconds === 60 && !hasWarnedPres) {
+          const previous = presSeconds;
+          presSeconds = Math.ceil((presDeadline - Date.now()) / 1000);
+          if (previous > 60 && presSeconds <= 60 && presSeconds > 0 && !hasWarnedPres) {
             hasWarnedPres = true;
             playWarningChime();
           }
-          if (presSeconds === 0) {
+          if (previous > 0 && presSeconds <= 0) {
             playChime();
             if (typeof confetti === 'function') confetti({ particleCount: 50, spread: 60 });
           }
         }
 
         if (qaRunning) {
-          qaSeconds--;
-          if (qaSeconds === 60 && !hasWarnedQa) {
+          const previous = qaSeconds;
+          qaSeconds = Math.ceil((qaDeadline - Date.now()) / 1000);
+          if (previous > 60 && qaSeconds <= 60 && qaSeconds > 0 && !hasWarnedQa) {
             hasWarnedQa = true;
             playWarningChime();
           }
-          if (qaSeconds === 0) {
+          if (previous > 0 && qaSeconds <= 0) {
             playChime();
             if (typeof confetti === 'function') confetti({ particleCount: 40, spread: 60 });
           }
         }
 
         updateTimersUI();
+        saveClocks();
       }, 1000);
     }
 
     function togglePres() {
       getAudioCtx();
       presRunning = !presRunning;
+      if (presRunning) presDeadline = Date.now() + presSeconds * 1000;
+      else {
+        presSeconds = Math.ceil((presDeadline - Date.now()) / 1000);
+        presDeadline = null;
+      }
+      saveClocks();
       document.getElementById('textPlayPres').textContent = presRunning ? 'Pause Pres (Space)' : 'Start Pres (Space)';
       document.getElementById('iconPlayPres').textContent = presRunning ? '⏸' : '▶';
       document.getElementById('btnTogglePres').className = presRunning
@@ -878,6 +935,7 @@ export function generateStandaloneHtml(): string {
 
     function resetPres() {
       presRunning = false;
+      presDeadline = null;
       hasWarnedPres = false;
       presSeconds = Math.round(getPresMins() * 60);
       document.getElementById('textPlayPres').textContent = 'Start Pres (Space)';
@@ -888,11 +946,17 @@ export function generateStandaloneHtml(): string {
       document.getElementById('cardPres').className = 'rounded-2xl border border-slate-800 bg-slate-950/90 p-4 flex flex-col justify-between transition-all';
       document.getElementById('projCardPres').className = 'rounded-3xl border-2 border-slate-800 bg-slate-900/60 p-6 flex flex-col items-center justify-center transition-all';
       updateTimersUI();
+      saveClocks();
     }
 
     function toggleQa() {
       getAudioCtx();
       qaRunning = !qaRunning;
+      if (qaRunning) qaDeadline = Date.now() + qaSeconds * 1000;
+      else {
+        qaSeconds = Math.ceil((qaDeadline - Date.now()) / 1000);
+        qaDeadline = null;
+      }
       if (qaRunning && presRunning) {
         togglePres();
       }
@@ -916,10 +980,12 @@ export function generateStandaloneHtml(): string {
         : 'rounded-3xl border-2 border-slate-800 bg-slate-900/60 p-6 flex flex-col items-center justify-center transition-all';
 
       startMasterTicker();
+      saveClocks();
     }
 
     function resetQa() {
       qaRunning = false;
+      qaDeadline = null;
       hasWarnedQa = false;
       qaSeconds = Math.round(getQaMins() * 60);
       document.getElementById('textPlayQa').textContent = 'Start Q&A (Q)';
@@ -930,6 +996,7 @@ export function generateStandaloneHtml(): string {
       document.getElementById('cardQa').className = 'rounded-2xl border border-slate-800 bg-slate-950/90 p-4 flex flex-col justify-between transition-all';
       document.getElementById('projCardQa').className = 'rounded-3xl border-2 border-slate-800 bg-slate-900/60 p-6 flex flex-col items-center justify-center transition-all';
       updateTimersUI();
+      saveClocks();
     }
 
     function drawRespondent() {
@@ -969,7 +1036,7 @@ export function generateStandaloneHtml(): string {
           }
           saveState();
 
-          document.getElementById('respondentNameTag').innerHTML = \`<span class="text-white bg-emerald-950/80 border border-emerald-600 px-2 py-0.5 rounded-md font-bold">🎯 \${picked}</span>\`;
+          showRespondent(picked);
           document.getElementById('projRespondentName').textContent = picked;
           document.getElementById('answeredCountLabel').textContent = \`\${state.answeredMembers.length} answered\`;
 
@@ -988,22 +1055,28 @@ export function generateStandaloneHtml(): string {
         return;
       }
 
-      container.innerHTML = group.members.map(m => {
+      container.replaceChildren();
+      group.members.forEach(m => {
         const isDone = state.answeredMembers.includes(m);
         const isCurrent = state.currentRespondent === m;
-        return \`<button onclick="selectRespondentDirectly('\${m.replace(/'/g, "\\\\'")}')" class="text-[10px] px-1.5 py-0.5 rounded border \${
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'text-[10px] px-1.5 py-0.5 rounded border ' + (
           isCurrent ? 'bg-emerald-600 border-emerald-400 text-white font-bold' :
           isDone ? 'bg-emerald-950/50 border-emerald-800 text-emerald-400' :
           'bg-slate-950 border-slate-800 text-slate-400 hover:text-white'
-        }">\${isDone ? '✓ ' : ''}\${m.split('(')[0].trim()}</button>\`;
-      }).join('');
+        );
+        button.textContent = (isDone ? '✓ ' : '') + m.split('(')[0].trim();
+        button.addEventListener('click', () => selectRespondentDirectly(m));
+        container.appendChild(button);
+      });
     }
 
     function selectRespondentDirectly(name) {
       state.currentRespondent = name;
       if (!state.answeredMembers.includes(name)) state.answeredMembers.push(name);
       saveState();
-      document.getElementById('respondentNameTag').innerHTML = \`<span class="text-white bg-emerald-950/80 border border-emerald-600 px-2 py-0.5 rounded-md font-bold">🎯 \${name}</span>\`;
+      showRespondent(name);
       document.getElementById('projRespondentName').textContent = name;
       document.getElementById('answeredCountLabel').textContent = \`\${state.answeredMembers.length} answered\`;
       renderRespondentChips();
@@ -1096,9 +1169,9 @@ export function generateStandaloneHtml(): string {
       presFormula.textContent = state.isPresProp ? \`\${memCount} members × \${state.presRate}m = \${presM}m total\` : \`Fixed \${presM}m\`;
 
       if (group.leader) {
-        leaderEl.innerHTML = \`<span>👑 Group Leader:</span> <span class="text-white">\${group.leader}</span>\`;
+        leaderEl.textContent = '👑 Group Leader: ' + group.leader;
         leaderEl.classList.remove('hidden');
-        projLeader.innerHTML = \`<span>👑 Leader:</span> <span class="text-white">\${group.leader}</span>\`;
+        projLeader.textContent = '👑 Leader: ' + group.leader;
         projLeader.classList.remove('hidden');
       } else {
         leaderEl.classList.add('hidden');
@@ -1106,7 +1179,7 @@ export function generateStandaloneHtml(): string {
       }
 
       if (group.members && group.members.length > 0) {
-        membersEl.innerHTML = \`<div class="font-bold uppercase tracking-wider text-slate-400 mb-1 text-[11px]">Team Members (\${group.members.length})</div><div class="flex flex-wrap justify-center gap-1">\${group.members.map(m => \`<span class="px-2 py-0.5 rounded bg-slate-900 border border-slate-800 text-[11px] text-slate-200">\${m}</span>\`).join('')}</div>\`;
+        membersEl.innerHTML = \`<div class="font-bold uppercase tracking-wider text-slate-400 mb-1 text-[11px]">Team Members (\${group.members.length})</div><div class="flex flex-wrap justify-center gap-1">\${group.members.map(m => \`<span class="px-2 py-0.5 rounded bg-slate-900 border border-slate-800 text-[11px] text-slate-200">\${escapeHtml(m)}</span>\`).join('')}</div>\`;
         membersEl.classList.remove('hidden');
       } else {
         membersEl.classList.add('hidden');
@@ -1115,6 +1188,7 @@ export function generateStandaloneHtml(): string {
 
     function renderGroupLists() {
       const total = state.pendingGroups.length + state.presentedGroups.length;
+      document.getElementById('setupPrompt').classList.toggle('hidden', total > 0);
       const done = state.presentedGroups.length;
       const pct = total === 0 ? 0 : Math.round((done / total) * 100);
 
@@ -1129,12 +1203,12 @@ export function generateStandaloneHtml(): string {
 
       const pendUl = document.getElementById('listPending');
       pendUl.innerHTML = state.pendingGroups.length 
-        ? state.pendingGroups.map((g, i) => '<li class="truncate py-0.5 border-b border-slate-900/60 flex items-center justify-between"><span class="truncate"><span class="text-slate-500 font-mono text-[10px] mr-1">' + (i + 1) + '.</span>' + g.name + '</span>' + (g.members && g.members.length ? '<span class="text-[10px] text-slate-500 font-mono">' + g.members.length + 'p</span>' : '') + '</li>').join('')
+        ? state.pendingGroups.map((g, i) => '<li class="truncate py-0.5 border-b border-slate-900/60 flex items-center justify-between"><span class="truncate"><span class="text-slate-500 font-mono text-[10px] mr-1">' + (i + 1) + '.</span>' + escapeHtml(g.name) + '</span>' + (g.members && g.members.length ? '<span class="text-[10px] text-slate-500 font-mono">' + g.members.length + 'p</span>' : '') + '</li>').join('')
         : '<li class="text-slate-600 italic">' + (total === 0 ? 'Add groups in Class Setup' : 'None left') + '</li>';
 
       const doneUl = document.getElementById('listPresented');
       doneUl.innerHTML = state.presentedGroups.length
-        ? state.presentedGroups.map((g) => '<li class="truncate py-0.5 border-b border-slate-900/60 flex items-center justify-between"><span class="truncate text-emerald-400/90 font-medium">✓ ' + g.name + '</span></li>').join('')
+        ? state.presentedGroups.map((g) => '<li class="truncate py-0.5 border-b border-slate-900/60 flex items-center justify-between"><span class="truncate text-emerald-400/90 font-medium">✓ ' + escapeHtml(g.name) + '</span></li>').join('')
         : '<li class="text-slate-600 italic">None yet</li>';
 
       // Projector pool sync
@@ -1145,7 +1219,7 @@ export function generateStandaloneHtml(): string {
       const projChips = document.getElementById('projPoolChips');
       if (projChips) {
         projChips.innerHTML = state.pendingGroups.length
-          ? state.pendingGroups.map((g, i) => '<span class="px-2.5 py-1 rounded-lg border border-slate-800 bg-slate-950/80 text-[11px] text-slate-300 font-medium">' + (i + 1) + '. ' + g.name + (g.members && g.members.length ? ' (' + g.members.length + 'p)' : '') + '</span>').join('')
+          ? state.pendingGroups.map((g, i) => '<span class="px-2.5 py-1 rounded-lg border border-slate-800 bg-slate-950/80 text-[11px] text-slate-300 font-medium">' + (i + 1) + '. ' + escapeHtml(g.name) + (g.members && g.members.length ? ' (' + g.members.length + 'p)' : '') + '</span>').join('')
           : '<span class="text-xs text-emerald-400 font-bold">🎉 All groups in the pool have presented!</span>';
       }
 
@@ -1169,15 +1243,24 @@ export function generateStandaloneHtml(): string {
       const qaSel = document.getElementById('selectQaTime').value;
       const peerUrl = (document.getElementById('inputPeerUrl')?.value || '').trim();
 
-      const items = parseRosterInput(raw);
+      const rosterChanged = raw !== (state.rawGroupInput || '').trim();
+      if (rosterChanged && isShuffling) {
+        alert('Wait for the group draw to finish before changing the roster.');
+        return;
+      }
+      if (rosterChanged && (state.currentGroup || state.presentedGroups.length) &&
+          !confirm('Changing the roster will clear presentation progress and reset both timers. Continue?')) return;
+      const items = rosterChanged ? parseRosterInput(raw) : [];
 
       state.courseTitle = course;
       state.rawGroupInput = raw;
-      state.pendingGroups = [...items];
-      state.presentedGroups = [];
-      state.currentGroup = null;
-      state.currentRespondent = null;
-      state.answeredMembers = [];
+      if (rosterChanged) {
+        state.pendingGroups = [...items];
+        state.presentedGroups = [];
+        state.currentGroup = null;
+        state.currentRespondent = null;
+        state.answeredMembers = [];
+      }
 
       if (presSel === '0') {
         state.isPresProp = false;
@@ -1198,11 +1281,11 @@ export function generateStandaloneHtml(): string {
       state.peerUrl = peerUrl;
 
       saveState();
-      syncUI();
-      alert('Successfully saved ' + course + ' with ' + items.length + ' groups and separated timers!');
+      syncUI(rosterChanged);
+      alert('Settings saved.');
     }
 
-    function syncUI() {
+    function syncUI(resetTimers = false) {
       document.getElementById('headerCourseTitle').textContent = state.courseTitle;
       document.getElementById('projCourseTitle').textContent = state.courseTitle;
       document.getElementById('inputCourseTitle').value = state.courseTitle;
@@ -1224,8 +1307,19 @@ export function generateStandaloneHtml(): string {
 
       renderGroupLists();
       renderRespondentChips();
-      resetPres();
-      resetQa();
+      if (resetTimers) {
+        resetPres();
+        resetQa();
+      } else {
+        updateTimersUI();
+      }
+    }
+
+    let previousQrFocus = null;
+    function closeQrModal() {
+      document.getElementById('qrModal').classList.add('hidden');
+      previousQrFocus?.focus();
+      previousQrFocus = null;
     }
 
     function openQrModal(title, url) {
@@ -1236,11 +1330,35 @@ export function generateStandaloneHtml(): string {
       document.getElementById('qrModalTitle').textContent = title;
       document.getElementById('qrModalUrl').textContent = url;
       document.getElementById('qrOpenExternal').href = url;
-      document.getElementById('qrImage').src = 'https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=' + encodeURIComponent(url);
+      StandaloneQRCode.toDataURL(url, { width: 250, margin: 2 }, (error, dataUrl) => {
+        if (error) {
+          console.error('Could not generate the QR code', error);
+          return;
+        }
+        document.getElementById('qrImage').src = dataUrl;
+      });
+      previousQrFocus = document.activeElement;
       document.getElementById('qrModal').classList.remove('hidden');
+      document.getElementById('btnCloseQrModal').focus();
     }
 
     window.addEventListener('keydown', (e) => {
+      const qrModal = document.getElementById('qrModal');
+      if (!qrModal.classList.contains('hidden')) {
+        if (e.key === 'Escape') closeQrModal();
+        if (e.key === 'Tab') {
+          const controls = [...qrModal.querySelectorAll('a[href], button:not([disabled])')];
+          const first = controls[0];
+          const last = controls[controls.length - 1];
+          if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+          else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+        }
+        return;
+      }
+      if (e.key === 'Escape') {
+        document.getElementById('projectorModal').classList.add('hidden');
+        return;
+      }
       if (['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement.tagName)) return;
 
       if (e.code === 'Space') {
@@ -1262,15 +1380,14 @@ export function generateStandaloneHtml(): string {
         e.preventDefault();
         if (e.shiftKey) resetQa();
         else resetPres();
-      } else if (e.key === 'Escape') {
-        document.getElementById('projectorModal').classList.add('hidden');
-        document.getElementById('qrModal').classList.add('hidden');
       }
     });
 
     document.addEventListener('DOMContentLoaded', () => {
       loadState();
+      loadClocks();
       syncUI();
+      saveClocks();
 
       document.getElementById('btnSoundToggle').addEventListener('click', () => {
         state.soundEnabled = !state.soundEnabled;
@@ -1296,16 +1413,16 @@ export function generateStandaloneHtml(): string {
       document.getElementById('btnProjTogglePres').addEventListener('click', togglePres);
       document.getElementById('btnResetPres').addEventListener('click', resetPres);
       document.getElementById('btnProjResetPres').addEventListener('click', resetPres);
-      document.getElementById('btnAddPresM').addEventListener('click', () => { presSeconds += 60; updateTimersUI(); });
-      document.getElementById('btnSubPresM').addEventListener('click', () => { presSeconds = Math.max(0, presSeconds - 60); updateTimersUI(); });
+      document.getElementById('btnAddPresM').addEventListener('click', () => { presSeconds += 60; if (presRunning) presDeadline += 60000; updateTimersUI(); saveClocks(); });
+      document.getElementById('btnSubPresM').addEventListener('click', () => { const next = Math.max(0, presSeconds - 60); if (presRunning) presDeadline += (next - presSeconds) * 1000; presSeconds = next; updateTimersUI(); saveClocks(); });
 
       // Q&A Controls
       document.getElementById('btnToggleQa').addEventListener('click', toggleQa);
       document.getElementById('btnProjToggleQa').addEventListener('click', toggleQa);
       document.getElementById('btnResetQa').addEventListener('click', resetQa);
       document.getElementById('btnProjResetQa').addEventListener('click', resetQa);
-      document.getElementById('btnAddQaM').addEventListener('click', () => { qaSeconds += 60; updateTimersUI(); });
-      document.getElementById('btnSubQaM').addEventListener('click', () => { qaSeconds = Math.max(0, qaSeconds - 60); updateTimersUI(); });
+      document.getElementById('btnAddQaM').addEventListener('click', () => { qaSeconds += 60; if (qaRunning) qaDeadline += 60000; updateTimersUI(); saveClocks(); });
+      document.getElementById('btnSubQaM').addEventListener('click', () => { const next = Math.max(0, qaSeconds - 60); if (qaRunning) qaDeadline += (next - qaSeconds) * 1000; qaSeconds = next; updateTimersUI(); saveClocks(); });
 
       // Respondent Draw
       document.getElementById('btnDrawRespondent').addEventListener('click', drawRespondent);
@@ -1356,7 +1473,7 @@ export function generateStandaloneHtml(): string {
           state.currentRespondent = null;
           state.answeredMembers = [];
           saveState();
-          syncUI();
+          syncUI(true);
         }
       }
 
@@ -1382,9 +1499,7 @@ export function generateStandaloneHtml(): string {
 
       document.getElementById('btnQrPeerForm').addEventListener('click', () => openQrModal('Student Peer Evaluation Form', state.peerUrl));
       document.getElementById('btnProjQrToggle').addEventListener('click', () => openQrModal('Student Peer Evaluation Form', state.peerUrl));
-      document.getElementById('btnCloseQrModal').addEventListener('click', () => {
-        document.getElementById('qrModal').classList.add('hidden');
-      });
+      document.getElementById('btnCloseQrModal').addEventListener('click', closeQrModal);
     });
   </script>
 </body>
