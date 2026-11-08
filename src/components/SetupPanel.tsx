@@ -389,7 +389,7 @@ export const SetupPanel: React.FC<SetupPanelProps> = ({
         {/* Save button */}
         <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
           <p className="text-xs text-slate-500">
-            Changes are saved in this browser.
+            Changes are saved in this browser. Changing a time rule resets that clock.
           </p>
 
           <button

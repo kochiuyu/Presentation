@@ -538,6 +538,14 @@ export default function App() {
       peerEvalFormUrl: string;
     }) => {
       const rosterChanged = params.rawGroupInput.trim() !== session.rawGroupInput.trim();
+      const presRuleChanged = session.presTimingMode !== params.presTimingMode ||
+        (params.presTimingMode === 'per_member'
+          ? session.presMinutesPerMember !== params.presMinutesPerMember
+          : session.presentationMinutes !== params.presentationMinutes);
+      const qaRuleChanged = session.qaTimingMode !== params.qaTimingMode ||
+        (params.qaTimingMode === 'per_member'
+          ? session.qaMinutesPerMember !== params.qaMinutesPerMember
+          : session.qaMinutes !== params.qaMinutes);
       if (rosterChanged && (session.currentGroup || session.presentedGroups.length > 0) &&
           !window.confirm('Changing the roster will clear presentation progress and reset both timers. Continue?')) {
         return false;
@@ -563,26 +571,36 @@ export default function App() {
       };
 
       setSession(updatedSession);
-      if (!rosterChanged) return true;
-      setCurrentRespondent(null);
-      setAnsweredMembers([]);
+      if (rosterChanged) {
+        setCurrentRespondent(null);
+        setAnsweredMembers([]);
+      }
 
-      // Reset presentation timer
-      setPresIsRunning(false);
-      presDeadlineRef.current = null;
-      const presM = computePresentationMinutes(
-        null,
-        params.presTimingMode,
-        params.presMinutesPerMember,
-        params.presentationMinutes
-      );
-      setPresSecondsRemaining(Math.round(presM * 60));
+      if (rosterChanged || presRuleChanged) {
+        setPresIsRunning(false);
+        presDeadlineRef.current = null;
+        hasWarnedPresRef.current = false;
+        const presM = computePresentationMinutes(
+          rosterChanged ? null : session.currentGroup,
+          params.presTimingMode,
+          params.presMinutesPerMember,
+          params.presentationMinutes
+        );
+        setPresSecondsRemaining(Math.round(presM * 60));
+      }
 
-      // Reset Q&A timer
-      setQaIsRunning(false);
-      qaDeadlineRef.current = null;
-      const qaM = computeQaMinutes(null, params.qaTimingMode, params.qaMinutes, params.qaMinutesPerMember);
-      setQaSecondsRemaining(Math.round(qaM * 60));
+      if (rosterChanged || qaRuleChanged) {
+        setQaIsRunning(false);
+        qaDeadlineRef.current = null;
+        hasWarnedQaRef.current = false;
+        const qaM = computeQaMinutes(
+          rosterChanged ? null : session.currentGroup,
+          params.qaTimingMode,
+          params.qaMinutes,
+          params.qaMinutesPerMember
+        );
+        setQaSecondsRemaining(Math.round(qaM * 60));
+      }
       return true;
     },
     [session, currentRespondent, answeredMembers, cancelGroupDraw]

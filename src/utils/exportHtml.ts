@@ -35,7 +35,7 @@ export function generateStandaloneHtml(): string {
         <div class="flex items-center gap-2 text-xs text-slate-400">
           <span class="inline-flex items-center gap-1 text-emerald-400 font-medium">
             <span class="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-            LocalStorage Synced
+            Saved on this device
           </span>
           <span>·</span>
           <span>Press <kbd class="px-1.5 py-0.5 rounded bg-slate-800 border border-slate-700 font-mono text-[10px]">Space</kbd> Pres, <kbd class="px-1.5 py-0.5 rounded bg-slate-800 border border-slate-700 font-mono text-[10px]">Q</kbd> Q&A, <kbd class="px-1.5 py-0.5 rounded bg-slate-800 border border-slate-700 font-mono text-[10px]">A</kbd> Answerer, <kbd class="px-1.5 py-0.5 rounded bg-slate-800 border border-slate-700 font-mono text-[10px]">N</kbd> Pick</span>
@@ -109,7 +109,7 @@ export function generateStandaloneHtml(): string {
         <div class="bg-slate-950/70 rounded-xl border border-slate-800 p-3.5">
           <div class="flex items-center justify-between text-xs font-medium text-slate-400 mb-1.5">
             <span>Session Progress</span>
-            <span id="progressPercent" class="font-bold text-slate-200">0% Complete (0/8)</span>
+            <span id="progressPercent" class="font-bold text-slate-200">0% Complete (0/0)</span>
           </div>
           <div class="w-full bg-slate-800 rounded-full h-2 overflow-hidden">
             <div id="progressBar" class="bg-gradient-to-r from-indigo-500 to-emerald-400 h-2 rounded-full transition-all duration-500" style="width: 0%"></div>
@@ -119,7 +119,7 @@ export function generateStandaloneHtml(): string {
             <div>
               <div class="font-semibold text-slate-300 mb-1 flex items-center justify-between text-[11px]">
                 <span>Remaining</span>
-                <span id="badgeRemainingCount" class="text-slate-400 font-mono">8</span>
+                <span id="badgeRemainingCount" class="text-slate-400 font-mono">0</span>
               </div>
               <ul id="listPending" class="space-y-1 max-h-36 overflow-y-auto pr-1 text-slate-400 text-[11px]"></ul>
             </div>
@@ -170,7 +170,7 @@ export function generateStandaloneHtml(): string {
 
                 <div class="my-3 text-center">
                   <div id="timerPresDigits" class="font-mono-numbers text-5xl md:text-6xl font-black text-white tracking-tight">
-                    16:00
+                    14:00
                   </div>
                   <div id="warnPres" class="hidden text-[11px] font-bold text-amber-400 mt-1">⚠️ Final 60 Seconds</div>
                   <div id="overPres" class="hidden text-[11px] font-black text-rose-400 mt-1 animate-pulse">🚨 OVERTIME</div>
@@ -394,7 +394,7 @@ export function generateStandaloneHtml(): string {
           </div>
 
           <div class="flex flex-wrap items-center justify-between gap-3 pt-2">
-            <span class="text-xs text-slate-400">Changes persist automatically in browser localStorage</span>
+            <span class="text-xs text-slate-400">Saved in this browser. Changing a time rule resets that clock.</span>
             <button id="btnInitGroups" class="py-2.5 px-6 rounded-xl font-bold text-xs bg-indigo-600 hover:bg-indigo-500 active:scale-[0.99] text-white shadow-md shadow-indigo-600/30 transition">
               Apply Changes & Save
             </button>
@@ -457,7 +457,7 @@ export function generateStandaloneHtml(): string {
             🎤 PRESENTATION TIME (PROPORTIONAL)
           </div>
           <div id="projTimerPresDigits" class="font-mono-numbers text-6xl sm:text-7xl md:text-8xl lg:text-9xl font-black text-white tracking-tighter leading-none my-1">
-            16:00
+            14:00
           </div>
           <div class="mt-3 flex items-center gap-2">
             <button id="btnProjTogglePres" class="px-4 py-2 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-500 text-white shadow-md">
@@ -780,7 +780,7 @@ export function generateStandaloneHtml(): string {
       tag.replaceChildren(span);
     }
 
-    let presSeconds = 16 * 60;
+    let presSeconds = 14 * 60;
     let presRunning = false;
     let presDeadline = null;
     let hasWarnedPres = false;
@@ -1297,6 +1297,10 @@ export function generateStandaloneHtml(): string {
       if (rosterChanged && (state.currentGroup || state.presentedGroups.length) &&
           !confirm('Changing the roster will clear presentation progress and reset both timers. Continue?')) return;
       const items = rosterChanged ? parseRosterInput(raw) : [];
+      const oldPresMins = getPresMins();
+      const oldQaMins = getQaMins();
+      const oldPresMode = state.isPresProp;
+      const oldQaMode = state.isQaProp;
 
       state.courseTitle = course;
       state.rawGroupInput = raw;
@@ -1328,6 +1332,10 @@ export function generateStandaloneHtml(): string {
 
       saveState();
       syncUI(rosterChanged);
+      if (!rosterChanged) {
+        if (oldPresMode !== state.isPresProp || oldPresMins !== getPresMins()) resetPres();
+        if (oldQaMode !== state.isQaProp || oldQaMins !== getQaMins()) resetQa();
+      }
       alert('Settings saved.');
     }
 
