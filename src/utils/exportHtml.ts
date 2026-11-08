@@ -1240,12 +1240,24 @@ export function generateStandaloneHtml(): string {
       }
     }
 
+    function isSafeFormUrl(value) {
+      try {
+        return ['http:', 'https:'].includes(new URL(value).protocol);
+      } catch {
+        return false;
+      }
+    }
+
     function initializeGroupsFromInput() {
       const raw = document.getElementById('inputGroupList').value.trim();
       const course = document.getElementById('inputCourseTitle').value.trim() || "Presentation Session";
       const presSel = document.getElementById('selectPresRate').value;
       const qaSel = document.getElementById('selectQaTime').value;
       const peerUrl = (document.getElementById('inputPeerUrl')?.value || '').trim();
+      if (peerUrl && !isSafeFormUrl(peerUrl)) {
+        alert('Enter a full http:// or https:// form link.');
+        return;
+      }
 
       const rosterChanged = raw !== (state.rawGroupInput || '').trim();
       if (rosterChanged && isShuffling) {
@@ -1297,7 +1309,7 @@ export function generateStandaloneHtml(): string {
       document.getElementById('selectPresRate').value = state.isPresProp ? String(state.presRate) : '0';
       document.getElementById('selectQaTime').value = state.isQaProp ? 'prop' : String(state.qaFixed);
       if (document.getElementById('inputPeerUrl')) document.getElementById('inputPeerUrl').value = state.peerUrl;
-      const hasForm = Boolean(state.peerUrl);
+      const hasForm = isSafeFormUrl(state.peerUrl);
       document.getElementById('labelPeerUrl').textContent = state.peerUrl || 'No form link added';
       document.getElementById('peerFormStatus').textContent = hasForm ? 'Active Form' : 'Not configured';
       document.getElementById('peerFormStatus').className = hasForm
@@ -1327,8 +1339,8 @@ export function generateStandaloneHtml(): string {
     }
 
     function openQrModal(title, url) {
-      if (!url) {
-        alert("No URL configured yet for this form.");
+      if (!isSafeFormUrl(url)) {
+        alert("Enter a full http:// or https:// form link in setup.");
         return;
       }
       document.getElementById('qrModalTitle').textContent = title;
@@ -1518,7 +1530,7 @@ export function generateStandaloneHtml(): string {
 
       document.getElementById('btnInitGroups').addEventListener('click', initializeGroupsFromInput);
       document.getElementById('btnOpenPeerForm').addEventListener('click', () => {
-        if (state.peerUrl) window.open(state.peerUrl, '_blank');
+        if (isSafeFormUrl(state.peerUrl)) window.open(state.peerUrl, '_blank', 'noopener,noreferrer');
         else alert("Please set your Peer Evaluation Form URL in setup.");
       });
 

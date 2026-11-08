@@ -70,6 +70,16 @@ export const SetupPanel: React.FC<SetupPanelProps> = ({
   const parsedItems = parseRosterInput(rawText);
 
   const handleInit = () => {
+    const formUrl = peerUrl.trim();
+    if (formUrl) {
+      try {
+        const protocol = new URL(formUrl).protocol;
+        if (protocol !== 'http:' && protocol !== 'https:') throw new Error('Unsupported link');
+      } catch {
+        alert('Enter a full http:// or https:// form link.');
+        return;
+      }
+    }
     const saved = onInitialize({
       courseTitle: courseTitle.trim() || 'Presentation Session',
       rawGroupInput: rawText,
@@ -80,7 +90,7 @@ export const SetupPanel: React.FC<SetupPanelProps> = ({
       qaTimingMode,
       qaMinutes: Number(qaFixed) || 5,
       qaMinutesPerMember: Number(qaRate) || 0.5,
-      peerEvalFormUrl: peerUrl.trim(),
+      peerEvalFormUrl: formUrl,
     });
 
     if (saved) {

@@ -8,10 +8,15 @@ interface FormsHubProps {
 
 export const FormsHub: React.FC<FormsHubProps> = ({ peerEvalUrl, onOpenQr }) => {
   const [copied, setCopied] = useState(false);
-  const hasForm = Boolean(peerEvalUrl.trim());
+  let hasForm = false;
+  try {
+    hasForm = ['http:', 'https:'].includes(new URL(peerEvalUrl).protocol);
+  } catch {
+    // An empty or malformed saved link must not become an active form.
+  }
 
   const handleOpenLink = () => {
-    if (!peerEvalUrl || peerEvalUrl.trim() === '') {
+    if (!hasForm) {
       alert('Please configure the Peer Evaluation Form URL in the setup panel below.');
       return;
     }
@@ -19,7 +24,7 @@ export const FormsHub: React.FC<FormsHubProps> = ({ peerEvalUrl, onOpenQr }) => 
   };
 
   const handleCopy = async () => {
-    if (!peerEvalUrl) return;
+    if (!hasForm) return;
     try {
       await navigator.clipboard.writeText(peerEvalUrl);
       setCopied(true);
