@@ -1,5 +1,5 @@
 import React from 'react';
-import { Volume2, VolumeX, Maximize2, Keyboard, Download, Music, Sparkles } from 'lucide-react';
+import { Volume2, VolumeX, Maximize2, Keyboard, Download, Music, Sparkles, Settings } from 'lucide-react';
 import { playChime } from '../utils/audio';
 import { generateStandaloneHtml } from '../utils/exportHtml';
 
@@ -69,6 +69,14 @@ export const Header: React.FC<HeaderProps> = ({
 
         {/* Action Controls */}
         <div className="flex items-center gap-2">
+          <a
+            href="#setup-section"
+            aria-label="Classroom Setup"
+            className="sm:hidden flex items-center gap-1 rounded-xl border border-slate-700 bg-slate-800 px-2.5 py-1.5 text-xs font-semibold text-indigo-300 hover:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+          >
+            <Settings className="h-3.5 w-3.5" />
+            Setup
+          </a>
           {/* Sound Mute Toggle */}
           <button
             onClick={onToggleSound}
