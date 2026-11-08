@@ -62,6 +62,8 @@ export default function App() {
   });
 
   const timerIntervalRef = useRef<number | null>(null);
+  const groupDrawTimeoutRef = useRef<number | null>(null);
+  const groupDrawGenerationRef = useRef(0);
   const hasWarnedPresRef = useRef<boolean>(false);
   const hasWarnedQaRef = useRef<boolean>(false);
 
@@ -259,6 +261,21 @@ export default function App() {
     ]
   );
 
+  const cancelGroupDraw = useCallback(() => {
+    groupDrawGenerationRef.current += 1;
+    if (groupDrawTimeoutRef.current !== null) {
+      window.clearTimeout(groupDrawTimeoutRef.current);
+      groupDrawTimeoutRef.current = null;
+    }
+    setIsDrawingGroup(false);
+    setDrawingCandidate('');
+  }, []);
+
+  useEffect(() => () => {
+    groupDrawGenerationRef.current += 1;
+    if (groupDrawTimeoutRef.current !== null) window.clearTimeout(groupDrawTimeoutRef.current);
+  }, []);
+
   // Centralized Animated Group Draw (Roulette with deceleration, ticks, fanfare, and confetti)
   const handleTriggerGroupDraw = useCallback(() => {
     if (isDrawingGroup) return;
@@ -268,11 +285,13 @@ export default function App() {
     }
 
     setIsDrawingGroup(true);
+    const drawGeneration = ++groupDrawGenerationRef.current;
     let speed = 40;
     let iterations = 0;
     const maxIterations = Math.min(26, Math.max(14, session.pendingGroups.length * 2));
 
     const step = () => {
+      if (drawGeneration !== groupDrawGenerationRef.current) return;
       const randomIndex = Math.floor(Math.random() * session.pendingGroups.length);
       const tempCandidate = session.pendingGroups[randomIndex];
       setDrawingCandidate(tempCandidate.name);
@@ -283,8 +302,9 @@ export default function App() {
 
       if (iterations < maxIterations) {
         speed += 12; // Realistic deceleration
-        setTimeout(step, speed);
+        groupDrawTimeoutRef.current = window.setTimeout(step, speed);
       } else {
+        groupDrawTimeoutRef.current = null;
         // Final pick
         const picked = session.pendingGroups[randomIndex];
         setIsDrawingGroup(false);
@@ -314,8 +334,7 @@ export default function App() {
   // Thorough Reset All Groups & Session State
   const handleResetAll = useCallback(() => {
     // 1. Cancel any active group draw animation
-    setIsDrawingGroup(false);
-    setDrawingCandidate('');
+    cancelGroupDraw();
 
     // 2. Re-parse pristine group roster in original order if raw input is available
     let allGroups: GroupItem[] = [];
@@ -376,6 +395,7 @@ export default function App() {
     );
     setQaSecondsRemaining(Math.round(cleanQaMins * 60));
   }, [
+    cancelGroupDraw,
     session.rawGroupInput,
     session.pendingGroups,
     session.presentedGroups,
@@ -413,6 +433,7 @@ export default function App() {
       qaFormUrl?: string;
       peerEvalFormUrl: string;
     }) => {
+      cancelGroupDraw();
       const updatedSession: SessionState = {
         ...session,
         courseTitle: params.courseTitle,
@@ -451,7 +472,7 @@ export default function App() {
       const qaM = computeQaMinutes(null, params.qaTimingMode, params.qaMinutes, params.qaMinutesPerMember);
       setQaSecondsRemaining(Math.round(qaM * 60));
     },
-    [session]
+    [session, cancelGroupDraw]
   );
 
   // Set Presentation Rate
@@ -508,7 +529,17 @@ export default function App() {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       const target = e.target as HTMLElement | null;
-      if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.tagName === 'SELECT')) {
+      if (e.key === 'Escape') {
+        setIsProjectorOpen(false);
+        setIsShortcutsOpen(false);
+        setQrModalData((prev) => ({ ...prev, isOpen: false }));
+        return;
+      }
+      if (
+        e.repeat || e.altKey || e.ctrlKey || e.metaKey ||
+        isShortcutsOpen || qrModalData.isOpen ||
+        target?.closest('input, textarea, select, button, a, [contenteditable], [role="button"]')
+      ) {
         return;
       }
 
@@ -537,10 +568,6 @@ export default function App() {
       } else if (e.key === 'm' || e.key === 'M') {
         e.preventDefault();
         setSession((prev) => ({ ...prev, soundEnabled: !prev.soundEnabled }));
-      } else if (e.key === 'Escape') {
-        setIsProjectorOpen(false);
-        setIsShortcutsOpen(false);
-        setQrModalData((prev) => ({ ...prev, isOpen: false }));
       }
     };
 
@@ -553,6 +580,8 @@ export default function App() {
     handleTriggerGroupDraw,
     handleResetPresTimer,
     handleResetQaTimer,
+    isShortcutsOpen,
+    qrModalData.isOpen,
   ]);
 
   return (
@@ -705,3 +734,4 @@ export default function App() {
     </div>
   );
 }
+

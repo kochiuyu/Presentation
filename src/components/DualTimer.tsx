@@ -201,7 +201,7 @@ export const DualTimer: React.FC<DualTimerProps> = ({
                 </div>
               </div>
               <span className="text-[10px] uppercase font-bold text-slate-400 bg-slate-900 px-2 py-0.5 rounded border border-slate-800">
-                PROPORTIONAL
+                {presTimingMode === 'fixed' ? `FIXED ${activePresTotalMin}M` : 'PROPORTIONAL'}
               </span>
             </div>
 
@@ -303,7 +303,7 @@ export const DualTimer: React.FC<DualTimerProps> = ({
                 </div>
               </div>
               <span className="text-[10px] uppercase font-bold text-slate-400 bg-slate-900 px-2 py-0.5 rounded border border-slate-800">
-                {qaTimingMode === 'fixed' ? 'FIXED 5M' : 'PROPORTIONAL'}
+                {qaTimingMode === 'fixed' ? `FIXED ${activeQaTotalMin}M` : 'PROPORTIONAL'}
               </span>
             </div>
 
@@ -518,3 +518,4 @@ export const DualTimer: React.FC<DualTimerProps> = ({
     </section>
   );
 };
+
