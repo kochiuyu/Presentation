@@ -15,6 +15,7 @@ export const ShortcutsModal: React.FC<ShortcutsModalProps> = ({ isOpen, onClose 
     { key: 'Space', desc: 'Start or Pause the Presentation countdown timer' },
     { key: 'Q', desc: 'Start or Pause the Q&A Discussion timer' },
     { key: 'N', desc: 'Draw next random student group (resets timers for new group)' },
+    { key: 'A', desc: 'Draw a random respondent from the current group' },
     { key: 'P', desc: 'Toggle Fullscreen / Lecture Hall Projector Mode' },
     { key: 'R', desc: 'Reset Presentation timer to original duration' },
     { key: 'Shift + R', desc: 'Reset Q&A timer to original duration' },
