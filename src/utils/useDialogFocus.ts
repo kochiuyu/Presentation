@@ -14,6 +14,8 @@ export function useDialogFocus(isOpen: boolean) {
 
     const keepFocusInside = (event: KeyboardEvent) => {
       if (event.key !== 'Tab') return;
+      const openDialogs = document.querySelectorAll('[role="dialog"][aria-modal="true"]');
+      if (openDialogs[openDialogs.length - 1] !== dialog) return;
       const items = focusable();
       if (!items.length) {
         event.preventDefault();

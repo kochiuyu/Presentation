@@ -18,6 +18,7 @@ import {
 import { GroupItem, TimingMode } from '../types';
 import { playTick, playFanfare } from '../utils/audio';
 import confetti from 'canvas-confetti';
+import { useDialogFocus } from '../utils/useDialogFocus';
 
 interface ProjectorViewProps {
   isOpen: boolean;
@@ -92,6 +93,7 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
   const [isShufflingRespondent, setIsShufflingRespondent] = useState(false);
   const [candidateRespondentName, setCandidateRespondentName] = useState<string>('');
   const [showPoolDrawer, setShowPoolDrawer] = useState<boolean>(true);
+  const dialogRef = useDialogFocus(isOpen);
 
   if (!isOpen) return null;
 
@@ -171,7 +173,7 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col justify-between bg-slate-950 p-4 sm:p-6 md:p-8 text-white select-none overflow-y-auto">
+    <div ref={dialogRef} role="dialog" aria-modal="true" aria-label="Projector view" tabIndex={-1} className="fixed inset-0 z-50 flex flex-col justify-between bg-slate-950 p-4 sm:p-6 md:p-8 text-white select-none overflow-y-auto">
       {/* Top Projector Bar */}
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-800/80 pb-3">
         <div className="flex items-center gap-3">

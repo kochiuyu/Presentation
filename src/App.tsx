@@ -602,9 +602,9 @@ export default function App() {
     const handleKeyDown = (e: KeyboardEvent) => {
       const target = e.target as HTMLElement | null;
       if (e.key === 'Escape') {
-        setIsProjectorOpen(false);
-        setIsShortcutsOpen(false);
-        setQrModalData((prev) => ({ ...prev, isOpen: false }));
+        if (isShortcutsOpen) setIsShortcutsOpen(false);
+        else if (qrModalData.isOpen) setQrModalData((prev) => ({ ...prev, isOpen: false }));
+        else if (isProjectorOpen) setIsProjectorOpen(false);
         return;
       }
       if (
