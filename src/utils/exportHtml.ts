@@ -1498,21 +1498,25 @@ export function generateStandaloneHtml(): string {
       // Quick rate buttons
       document.getElementById('btnQuick2m').addEventListener('click', () => {
         state.isPresProp = true; state.presRate = 2; saveState(); resetPres();
+        document.getElementById('selectPresRate').value = '2';
         document.getElementById('btnQuick2m').className = 'px-2.5 py-1 rounded text-xs font-bold bg-indigo-600 text-white';
         document.getElementById('btnQuick1m').className = 'px-2.5 py-1 rounded text-xs font-semibold text-slate-400 hover:text-white';
       });
       document.getElementById('btnQuick1m').addEventListener('click', () => {
         state.isPresProp = true; state.presRate = 1; saveState(); resetPres();
+        document.getElementById('selectPresRate').value = '1';
         document.getElementById('btnQuick1m').className = 'px-2.5 py-1 rounded text-xs font-bold bg-indigo-600 text-white';
         document.getElementById('btnQuick2m').className = 'px-2.5 py-1 rounded text-xs font-semibold text-slate-400 hover:text-white';
       });
       document.getElementById('btnQuickQa5').addEventListener('click', () => {
         state.isQaProp = false; state.qaFixed = 5; saveState(); resetQa();
+        document.getElementById('selectQaTime').value = '5';
         document.getElementById('btnQuickQa5').className = 'px-2.5 py-1 rounded text-xs font-bold bg-emerald-600 text-white';
         document.getElementById('btnQuickQa3').className = 'px-2.5 py-1 rounded text-xs font-semibold text-slate-400 hover:text-white';
       });
       document.getElementById('btnQuickQa3').addEventListener('click', () => {
         state.isQaProp = false; state.qaFixed = 3; saveState(); resetQa();
+        document.getElementById('selectQaTime').value = '3';
         document.getElementById('btnQuickQa3').className = 'px-2.5 py-1 rounded text-xs font-bold bg-emerald-600 text-white';
         document.getElementById('btnQuickQa5').className = 'px-2.5 py-1 rounded text-xs font-semibold text-slate-400 hover:text-white';
       });

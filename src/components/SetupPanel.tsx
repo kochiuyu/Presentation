@@ -62,6 +62,12 @@ export const SetupPanel: React.FC<SetupPanelProps> = ({
   const [qaFixed, setQaFixed] = useState<number>(initialQaMin);
   const [qaRate, setQaRate] = useState<number>(initialQaRate);
 
+  // Keep the setup controls aligned with changes made by the timer quick controls.
+  React.useEffect(() => setPresTimingMode(initialPresMode), [initialPresMode]);
+  React.useEffect(() => setPresRate(initialPresRate), [initialPresRate]);
+  React.useEffect(() => setQaTimingMode(initialQaMode), [initialQaMode]);
+  React.useEffect(() => setQaFixed(initialQaMin), [initialQaMin]);
+
   const [qaUrl, setQaUrl] = useState(initialQaUrl);
   const [peerUrl, setPeerUrl] = useState(initialPeerUrl);
   const [justSaved, setJustSaved] = useState(false);
