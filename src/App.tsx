@@ -12,7 +12,9 @@ import { SetupPanel } from './components/SetupPanel';
 import { ProjectorView } from './components/ProjectorView';
 import { QrModal } from './components/QrModal';
 import { ShortcutsModal } from './components/ShortcutsModal';
+import { BackupPanel } from './components/BackupPanel';
 import { loadSessionState, saveSessionState, parseRosterInput } from './utils/storage';
+import { createBackup, type SessionBackup } from './utils/backup';
 import { playChime, playWarningChime, playTick, playFanfare } from './utils/audio';
 import { SessionState, GroupItem, TimingMode, computePresentationMinutes, computeQaMinutes } from './types';
 import confetti from 'canvas-confetti';
@@ -38,6 +40,7 @@ function loadClocks(groupId: string | null) {
 
 export default function App() {
   const [session, setSession] = useState<SessionState>(() => loadSessionState());
+  const [setupVersion, setSetupVersion] = useState(0);
   const [savedClocks] = useState(() => loadClocks(session.currentGroup?.id ?? null));
 
   // Centralized Group Draw Animation State
@@ -92,6 +95,28 @@ export default function App() {
   const groupDrawGenerationRef = useRef(0);
   const hasWarnedPresRef = useRef<boolean>(false);
   const hasWarnedQaRef = useRef<boolean>(false);
+
+  const exportBackup = () => createBackup(
+    { ...session, currentRespondent, answeredMembers },
+    presDeadlineRef.current !== null ? Math.ceil((presDeadlineRef.current - Date.now()) / 1000) : presSecondsRemaining,
+    qaDeadlineRef.current !== null ? Math.ceil((qaDeadlineRef.current - Date.now()) / 1000) : qaSecondsRemaining
+  );
+
+  const restoreBackup = (backup: SessionBackup) => {
+    cancelGroupDraw();
+    presDeadlineRef.current = null;
+    qaDeadlineRef.current = null;
+    hasWarnedPresRef.current = false;
+    hasWarnedQaRef.current = false;
+    setPresIsRunning(false);
+    setQaIsRunning(false);
+    setPresSecondsRemaining(backup.clocks.presSeconds);
+    setQaSecondsRemaining(backup.clocks.qaSeconds);
+    setCurrentRespondent(backup.session.currentRespondent);
+    setAnsweredMembers(backup.session.answeredMembers);
+    setSession(backup.session);
+    setSetupVersion((value) => value + 1);
+  };
 
   // Persist session state to localStorage
   useEffect(() => {
@@ -758,6 +783,7 @@ export default function App() {
 
           <div className="lg:col-span-7">
             <SetupPanel
+              key={setupVersion}
               courseTitle={session.courseTitle}
               rawGroupInput={session.rawGroupInput}
               presTimingMode={session.presTimingMode}
@@ -772,6 +798,7 @@ export default function App() {
             />
           </div>
         </div>
+        <BackupPanel onExport={exportBackup} onRestore={restoreBackup} />
       </main>
 
       {/* Projector View Overlay (Separated Clocks + Q&A Respondent Showcase) */}

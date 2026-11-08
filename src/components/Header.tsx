@@ -59,7 +59,7 @@ export const Header: React.FC<HeaderProps> = ({
             <div className="flex items-center gap-2 text-xs text-slate-400">
               <span className="inline-flex items-center gap-1 text-emerald-400 font-medium">
                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                LocalStorage Synced
+                Saved on this device
               </span>
               <span>·</span>
               <span className="hidden sm:inline">Press <kbd className="rounded bg-slate-800 px-1 py-0.5 font-mono text-[10px] text-slate-300 border border-slate-700">Space</kbd> Pres, <kbd className="rounded bg-slate-800 px-1 py-0.5 font-mono text-[10px] text-slate-300 border border-slate-700">Q</kbd> Q&A, <kbd className="rounded bg-slate-800 px-1 py-0.5 font-mono text-[10px] text-slate-300 border border-slate-700">A</kbd> Respondent, <kbd className="rounded bg-slate-800 px-1 py-0.5 font-mono text-[10px] text-slate-300 border border-slate-700">N</kbd> Pick</span>
@@ -105,7 +105,7 @@ export const Header: React.FC<HeaderProps> = ({
           <button
             onClick={handleDownloadStandalone}
             className="flex items-center gap-1.5 rounded-xl border border-slate-700 bg-slate-800/90 px-3 py-1.5 text-xs font-semibold text-indigo-300 hover:border-indigo-500 hover:bg-slate-800 transition"
-            title="Download standalone single-file index.html for GitHub Pages"
+            title="Download a blank standalone page; session data is not included"
           >
             <Download className="h-3.5 w-3.5 text-indigo-400" />
             <span className="hidden md:inline">Download HTML</span>
