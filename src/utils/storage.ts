@@ -60,6 +60,8 @@ export function parseRosterInput(input: string): GroupItem[] {
     const headerCols = parseCsvRow(rawLines[0], delimiter).map((h) => h.toLowerCase());
     const groupNameIdx = headerCols.findIndex((h) => h.includes('group'));
     const leaderIdx = headerCols.findIndex((h) => h.includes('leader'));
+    const memberIndices = headerCols.flatMap((h, idx) => h.includes('member') ? [idx] : []);
+    const participantIndices = [...(leaderIdx >= 0 ? [leaderIdx] : []), ...memberIndices];
 
     const groups: GroupItem[] = [];
 
@@ -73,10 +75,9 @@ export function parseRosterInput(input: string): GroupItem[] {
       const leader = leaderIdx >= 0 ? cols[leaderIdx] : undefined;
       const rawMembers: string[] = [];
 
-      cols.forEach((col, idx) => {
-        if (idx !== groupNameIdx && col && col.length > 0) {
-          rawMembers.push(col);
-        }
+      participantIndices.forEach((idx) => {
+        const col = cols[idx];
+        if (col && col.length > 0) rawMembers.push(col);
       });
 
       // Deduplicate member names while preserving order

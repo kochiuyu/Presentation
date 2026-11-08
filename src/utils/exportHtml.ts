@@ -650,6 +650,8 @@ export function generateStandaloneHtml(): string {
         const headerCols = parseCsvRow(rawLines[0], delimiter).map(h => h.toLowerCase());
         const groupNameIdx = headerCols.findIndex(h => h.includes('group'));
         const leaderIdx = headerCols.findIndex(h => h.includes('leader'));
+        const memberIndices = headerCols.flatMap((h, idx) => h.includes('member') ? [idx] : []);
+        const participantIndices = [...(leaderIdx >= 0 ? [leaderIdx] : []), ...memberIndices];
         const groups = [];
 
         for (let i = 1; i < rawLines.length; i++) {
@@ -658,8 +660,9 @@ export function generateStandaloneHtml(): string {
           if (!name) continue;
           const leader = leaderIdx >= 0 ? cols[leaderIdx] : undefined;
           const rawMembers = [];
-          cols.forEach((col, idx) => {
-            if (idx !== groupNameIdx && col && col.length > 0) rawMembers.push(col);
+          participantIndices.forEach(idx => {
+            const col = cols[idx];
+            if (col && col.length > 0) rawMembers.push(col);
           });
           const uniqueMembers = [];
           const seen = new Set();
