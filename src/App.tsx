@@ -471,13 +471,31 @@ export default function App() {
 
   // Return a single group to pending pool
   const handleReturnToPending = useCallback((group: GroupItem) => {
+    const wasCurrentGroup = session.currentGroup?.id === group.id;
     setSession((prev) => ({
       ...prev,
       presentedGroups: prev.presentedGroups.filter((g) => g.id !== group.id),
       pendingGroups: [...prev.pendingGroups, { ...group, presentedAt: undefined }],
       currentGroup: prev.currentGroup?.id === group.id ? null : prev.currentGroup,
     }));
-  }, []);
+    if (!wasCurrentGroup) return;
+
+    setCurrentRespondent(null);
+    setAnsweredMembers([]);
+    setPresIsRunning(false);
+    presDeadlineRef.current = null;
+    hasWarnedPresRef.current = false;
+    setPresSecondsRemaining(Math.round(computePresentationMinutes(
+      null, session.presTimingMode, session.presMinutesPerMember, session.presentationMinutes
+    ) * 60));
+    setQaIsRunning(false);
+    qaDeadlineRef.current = null;
+    hasWarnedQaRef.current = false;
+    setQaSecondsRemaining(Math.round(computeQaMinutes(
+      null, session.qaTimingMode, session.qaMinutes, session.qaMinutesPerMember
+    ) * 60));
+  }, [session.currentGroup, session.presTimingMode, session.presMinutesPerMember,
+      session.presentationMinutes, session.qaTimingMode, session.qaMinutes, session.qaMinutesPerMember]);
 
   // Initialize from Setup Panel
   const handleInitializeSetup = useCallback(
