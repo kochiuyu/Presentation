@@ -179,7 +179,7 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
             PROJECTOR VIEW
           </span>
           <h2 className="text-lg md:text-2xl font-black text-slate-100 tracking-tight">
-            {courseTitle || 'DOTE5110 Statistical Analysis'}
+            {courseTitle || 'Presentation Session'}
           </h2>
         </div>
 
@@ -200,7 +200,7 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
           </button>
 
           {/* Peer Eval QR */}
-          <button
+      <button
             onClick={onOpenQr}
             className="flex items-center gap-1.5 rounded-xl border border-slate-700 bg-slate-900 px-3.5 py-1.5 text-xs font-bold text-slate-200 hover:bg-slate-800 transition"
           >
@@ -300,7 +300,9 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
             <p className="mt-1 text-xs sm:text-sm text-slate-400 max-w-md">
               {pendingGroups.length > 0
                 ? `${pendingGroups.length} groups in remaining pool. Click "Next Group (N)" to draw.`
-                : 'All groups have presented! Click "Reset All" to begin a new round.'}
+                : presentedGroups.length > 0
+                  ? 'All groups have presented! Click "Reset All" to begin a new round.'
+                  : 'Add groups in Classroom Setup to begin.'}
             </p>
             {pendingGroups.length > 0 && (
               <button

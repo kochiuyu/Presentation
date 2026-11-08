@@ -9,7 +9,7 @@ export function generateStandaloneHtml(): string {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>DOTE5110 Statistical Analysis - Presentation Facilitator</title>
+  <title>Presentation Facilitator</title>
   <meta name="description" content="Classroom presentation manager with separated presentation & Q&A timers, proportional group-size duration, random group picker, random Q&A member draw, Google Forms hub, Web Audio chime, and projector mode.">
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
@@ -27,7 +27,7 @@ export function generateStandaloneHtml(): string {
         CP
       </div>
       <div>
-        <h1 id="headerCourseTitle" class="font-bold text-base md:text-lg text-slate-100 leading-tight">DOTE5110 Statistical Analysis</h1>
+        <h1 id="headerCourseTitle" class="font-bold text-base md:text-lg text-slate-100 leading-tight">Presentation Session</h1>
         <div class="flex items-center gap-2 text-xs text-slate-400">
           <span class="inline-flex items-center gap-1 text-emerald-400 font-medium">
             <span class="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
@@ -66,7 +66,7 @@ export function generateStandaloneHtml(): string {
             <h2 class="text-lg font-bold text-white">Active Presenter</h2>
           </div>
           <div class="flex items-center gap-2 text-xs">
-            <span id="statPending" class="text-amber-400 font-semibold">8 Pending</span>
+            <span id="statPending" class="text-amber-400 font-semibold">0 Pending</span>
             <span class="text-slate-600">/</span>
             <span id="statPresented" class="text-emerald-400 font-semibold">0 Done</span>
           </div>
@@ -78,14 +78,14 @@ export function generateStandaloneHtml(): string {
             NOW ON STAGE
           </div>
           <h3 id="currentGroupName" class="text-2xl md:text-3xl font-black text-white tracking-tight leading-snug">
-            Ready to draw first group
+            Add groups to begin
           </h3>
           <div id="currentGroupLeader" class="hidden mt-2 inline-flex items-center gap-1.5 rounded-lg bg-indigo-950/80 border border-indigo-700/50 px-2.5 py-0.5 text-xs text-indigo-200 font-semibold">
           </div>
           <div id="currentGroupMembers" class="hidden mt-2.5 w-full bg-slate-950/60 rounded-xl p-2.5 border border-slate-800/80 text-xs text-slate-300">
           </div>
           <p id="groupSubtext" class="text-xs text-slate-400 mt-2">
-            Click &quot;Draw Next Group&quot; or press <kbd class="px-1.5 py-0.5 rounded bg-slate-800 border border-slate-700 font-mono text-[11px]">N</kbd>
+            Paste a roster in Class Setup, then apply the changes.
           </p>
         </div>
 
@@ -291,11 +291,11 @@ export function generateStandaloneHtml(): string {
                 <h2 class="text-lg font-bold text-white">Peer Evaluation Form</h2>
               </div>
             </div>
-            <span class="text-xs px-2.5 py-0.5 rounded-full bg-emerald-950 border border-emerald-800/60 text-emerald-300 font-semibold">Active Form</span>
+            <span id="peerFormStatus" class="text-xs px-2.5 py-0.5 rounded-full bg-slate-800 border border-slate-700 text-slate-400 font-semibold">Not configured</span>
           </div>
 
           <p class="text-xs text-slate-400 mb-4 leading-relaxed">
-            Students and audience members use this Google Form to evaluate each presenting group and submit peer grades in real time.
+            <span id="peerFormDescription">Add a form link in Class Setup to enable sharing and the QR code.</span>
           </p>
 
           <div class="p-4 rounded-xl bg-gradient-to-br from-indigo-950/40 via-slate-950 to-slate-950 border border-indigo-500/30 shadow-md space-y-3">
@@ -305,7 +305,7 @@ export function generateStandaloneHtml(): string {
               </div>
               <div class="min-w-0">
                 <div class="text-sm font-bold text-slate-200">Student Peer Evaluation Form</div>
-                <div id="labelPeerUrl" class="text-xs text-indigo-300 truncate max-w-[220px] font-mono">https://forms.gle/bKtEYEEkvUy3F4mt6</div>
+                <div id="labelPeerUrl" class="text-xs text-indigo-300 truncate max-w-[220px] font-mono">No form link added</div>
               </div>
             </div>
 
@@ -322,7 +322,7 @@ export function generateStandaloneHtml(): string {
 
         <div class="mt-4 pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs text-slate-500">
           <span>Form link automatically persists in localStorage</span>
-          <span class="text-slate-400">Classroom Ready</span>
+          <span class="text-slate-400">Form link optional</span>
         </div>
       </section>
 
@@ -333,15 +333,12 @@ export function generateStandaloneHtml(): string {
             <span class="text-xs uppercase tracking-wider font-bold text-sky-400">Class Setup & Timings</span>
             <h2 class="text-lg font-bold text-white">Course & Roster Configuration</h2>
           </div>
-          <button id="btnLoadSample" class="text-xs text-indigo-400 hover:text-indigo-300 font-semibold underline underline-offset-4">
-            Reset to DOTE5110 Default Roster
-          </button>
         </div>
 
         <div class="space-y-4">
           <div>
             <label class="block text-xs font-semibold text-slate-300 mb-1">Course Title</label>
-            <input id="inputCourseTitle" type="text" class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-slate-200 focus:border-indigo-500 focus:outline-none" value="DOTE5110 Statistical Analysis">
+            <input id="inputCourseTitle" type="text" class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-slate-200 focus:border-indigo-500 focus:outline-none" value="Presentation Session">
           </div>
 
           <!-- Proportional Timing Configuration -->
@@ -377,7 +374,7 @@ export function generateStandaloneHtml(): string {
               <label class="text-xs font-semibold text-slate-300">
                 Student Groups & Roster <span class="text-slate-500 font-normal">(Paste Google Sheets CSV, TSV, or plain names)</span>
               </label>
-              <span id="detectedCountBadge" class="text-[11px] font-mono text-indigo-400">8 groups detected</span>
+              <span id="detectedCountBadge" class="text-[11px] font-mono text-indigo-400">0 groups detected</span>
             </div>
             <textarea id="inputGroupList" rows="5" class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-slate-200 font-mono focus:border-indigo-500 focus:outline-none leading-relaxed"></textarea>
           </div>
@@ -387,8 +384,8 @@ export function generateStandaloneHtml(): string {
               <label class="block text-xs font-semibold text-slate-300">Peer Evaluation Google Form URL</label>
               <span class="text-[11px] text-indigo-400 font-medium">Audience Feedback Form</span>
             </div>
-            <input id="inputPeerUrl" type="url" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-xs text-slate-200 font-mono focus:border-indigo-500 focus:outline-none" value="https://forms.gle/bKtEYEEkvUy3F4mt6">
-            <p class="mt-1 text-[11px] text-slate-500">Configured URL: <span class="text-slate-400 font-mono">https://forms.gle/bKtEYEEkvUy3F4mt6</span></p>
+            <input id="inputPeerUrl" type="url" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-xs text-slate-200 font-mono focus:border-indigo-500 focus:outline-none" placeholder="https://forms.gle/your-form">
+            <p class="mt-1 text-[11px] text-slate-500">Optional: add a form link to enable sharing and the QR code.</p>
           </div>
 
           <div class="flex flex-wrap items-center justify-between gap-3 pt-2">
@@ -407,7 +404,7 @@ export function generateStandaloneHtml(): string {
     <div class="flex items-center justify-between border-b border-slate-800/80 pb-3">
       <div class="flex items-center gap-3">
         <span class="px-3 py-1 rounded-lg bg-indigo-500/20 text-indigo-400 text-xs font-black tracking-widest uppercase">PROJECTOR VIEW</span>
-        <h2 id="projCourseTitle" class="text-xl md:text-2xl font-black text-slate-200">DOTE5110 Statistical Analysis</h2>
+        <h2 id="projCourseTitle" class="text-xl md:text-2xl font-black text-slate-200">Presentation Session</h2>
       </div>
       <div class="flex items-center gap-3">
         <button id="btnProjQrToggle" class="px-4 py-2 rounded-xl text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700">
@@ -677,21 +674,20 @@ export function generateStandaloneHtml(): string {
       return rawLines.map(line => ({ name: line }));
     }
 
-    const STORAGE_KEY = 'dote5110_presenter_data_v6';
-    const DEFAULT_GOOGLE_SHEET_CSV = \`Group Name,Leader,Member 1,Member 2,Member 3,Member 4,Member 5,Member 6,Member 7,Member 8
-ITM Pass,CHAN Chun Ming (Danny),CHAN Chun Ming (Danny),CHOW Sik Hong (Eric),WAN Wing Wai (Michelle),LAM Ka Ho (Danny),Wong Yin Yee (Jess),Lam Kai Yi (Kelly),Zhang Yi Chi(Adam),Wang Shengping (Spencer)
-Group 1,Tan Tsz Ching (Iris),Ng Kei Ming Kevin,Liu Tsun Yee (Matt),"Kan Pok Shing, Harry",CHAN CHUN YIN (Tom),Cheung Ting Fung (Tito),Chan Ka Chun (EricB),Tan Tsz Ching (Iris),
-GIGO,CHAN Hoi Ho (Thomas),Lai Chun Man (Edward),Ho Lok Yiu (Kenix),FUNG Phillis,CHAN Hoi Ho (Thomas),Yeung Chin Wai (Charlotte),"WAN Ka Wing, Daniel",,
-Group 3,Szeto Wing Yan (Queenie),WONG Oi Lam (Tac),Ng Kit Yee (Kit),Chieh Kwong Wing (William),Wong Ho Hay Edgar,Ng Hau Yin (Mandy),Ching Lok Yan (Ada),Szeto Wing Yan (Queenie),
-jager bomb,Cheng Man Hin,Lam Tsz Lok Dennis,Yeung Hoi Ying Daisy,Chan Jian Xi Elvis,Ma Tsz Yan,Lo Chun Hang Leo,Chan Gi Wei Violet,Gao Ying Ying,
-Ctrl + Six,Tsoi Wing Sze (Celia) ,Yung Ching Lam (Kimberly),Li Yuk Yu (Sherena),Tsoi Wing Sze (Celia) ,Lam Ching Wing (Andrea),Wong Wai (Angela),Lai Kit Sum (Kennis),,
-Last but not Beast,Wong Yu Kin Ivan,Law Yu Tung (Sabine),Ho Kai Ching (Matt),LEUNG Yi Kit (Ricky),CHEUNG KWOK LUEN (Anson),LEE KA HONG (Ka-hong),Wong Yu Kin Ivan,WONG Hon Lung (Barron),
-DataPandas,HAO Chunhui (Nick) ,CHEUNG Kai leuk (Ken),ZHANG Jiamin Cathie,LEE Chun Kit (Ivan),WONG IOK SENG (Samuel),HAO Chunhui (Nick) ,Wong Sung Him (Tony),Lam Nga Mei (May),LI Kai Ming (Kasu)\`;
+    const STORAGE_KEY = 'presentation_facilitator_data_v1';
+    const LEGACY_STORAGE_KEY = 'dote5110_presenter_data_v6';
+    const LEGACY_ROSTER_HASH = 3562784588;
+
+    function rosterHash(value) {
+      let hash = 2166136261;
+      for (let i = 0; i < value.length; i++) hash = Math.imul(hash ^ value.charCodeAt(i), 16777619);
+      return hash >>> 0;
+    }
 
     let state = {
-      courseTitle: "DOTE5110 Statistical Analysis",
-      rawGroupInput: DEFAULT_GOOGLE_SHEET_CSV,
-      pendingGroups: parseRosterInput(DEFAULT_GOOGLE_SHEET_CSV),
+      courseTitle: "Presentation Session",
+      rawGroupInput: "",
+      pendingGroups: [],
       presentedGroups: [],
       currentGroup: null,
       currentRespondent: null,
@@ -702,19 +698,29 @@ DataPandas,HAO Chunhui (Nick) ,CHEUNG Kai leuk (Ken),ZHANG Jiamin Cathie,LEE Chu
       qaRate: 0.5,
       isPresProp: true,
       isQaProp: false,
-      peerUrl: "https://forms.gle/bKtEYEEkvUy3F4mt6",
+      peerUrl: "",
       soundEnabled: true
     };
 
     function loadState() {
       try {
-        const raw = localStorage.getItem(STORAGE_KEY);
+        const saved = localStorage.getItem(STORAGE_KEY);
+        const raw = saved || localStorage.getItem(LEGACY_STORAGE_KEY);
         if (raw) {
           const parsed = JSON.parse(raw);
-          Object.assign(state, parsed);
-          if (!state.peerUrl || state.peerUrl.includes('peer-eval-demo')) {
-            state.peerUrl = "https://forms.gle/bKtEYEEkvUy3F4mt6";
+          if (!saved) {
+            if (parsed.courseTitle === 'DOTE5110 Statistical Analysis') parsed.courseTitle = 'Presentation Session';
+            if (parsed.peerUrl === 'https://forms.gle/bKtEYEEkvUy3F4mt6' || parsed.peerUrl?.includes('peer-eval-demo')) parsed.peerUrl = '';
+            if (rosterHash(parsed.rawGroupInput || '') === LEGACY_ROSTER_HASH) {
+              parsed.rawGroupInput = '';
+              parsed.pendingGroups = [];
+              parsed.presentedGroups = [];
+              parsed.currentGroup = null;
+              parsed.currentRespondent = null;
+              parsed.answeredMembers = [];
+            }
           }
+          Object.assign(state, parsed);
         }
       } catch(e) {}
     }
@@ -1006,7 +1012,7 @@ DataPandas,HAO Chunhui (Nick) ,CHEUNG Kai leuk (Ken),ZHANG Jiamin Cathie,LEE Chu
     function drawNextGroup() {
       if (isShuffling) return;
       if (!state.pendingGroups.length) {
-        alert("All groups have presented in this session! Click 'Reset All' to start a new round.");
+        alert(state.presentedGroups.length ? "All groups have presented in this session! Click 'Reset All' to start a new round." : "Add a roster in Class Setup before drawing a group.");
         return;
       }
 
@@ -1118,11 +1124,13 @@ DataPandas,HAO Chunhui (Nick) ,CHEUNG Kai leuk (Ken),ZHANG Jiamin Cathie,LEE Chu
       document.getElementById('progressBar').style.width = \`\${pct}%\`;
       document.getElementById('badgeRemainingCount').textContent = state.pendingGroups.length;
       document.getElementById('badgeDoneCount').textContent = done;
+      document.getElementById('btnDrawGroup').disabled = state.pendingGroups.length === 0;
+      document.getElementById('btnResetSession').disabled = total === 0;
 
       const pendUl = document.getElementById('listPending');
       pendUl.innerHTML = state.pendingGroups.length 
         ? state.pendingGroups.map((g, i) => '<li class="truncate py-0.5 border-b border-slate-900/60 flex items-center justify-between"><span class="truncate"><span class="text-slate-500 font-mono text-[10px] mr-1">' + (i + 1) + '.</span>' + g.name + '</span>' + (g.members && g.members.length ? '<span class="text-[10px] text-slate-500 font-mono">' + g.members.length + 'p</span>' : '') + '</li>').join('')
-        : '<li class="text-slate-600 italic">None left</li>';
+        : '<li class="text-slate-600 italic">' + (total === 0 ? 'Add groups in Class Setup' : 'None left') + '</li>';
 
       const doneUl = document.getElementById('listPresented');
       doneUl.innerHTML = state.presentedGroups.length
@@ -1147,7 +1155,7 @@ DataPandas,HAO Chunhui (Nick) ,CHEUNG Kai leuk (Ken),ZHANG Jiamin Cathie,LEE Chu
         document.getElementById('groupBadge').classList.remove('hidden');
         renderActiveGroupRoster(state.currentGroup);
       } else {
-        document.getElementById('currentGroupName').textContent = "No Group Selected Yet";
+        document.getElementById('currentGroupName').textContent = total === 0 ? "Add groups to begin" : "No Group Selected Yet";
         document.getElementById('projGroupName').textContent = "Ready to Begin";
         document.getElementById('groupBadge').classList.add('hidden');
         renderActiveGroupRoster(null);
@@ -1156,16 +1164,12 @@ DataPandas,HAO Chunhui (Nick) ,CHEUNG Kai leuk (Ken),ZHANG Jiamin Cathie,LEE Chu
 
     function initializeGroupsFromInput() {
       const raw = document.getElementById('inputGroupList').value.trim();
-      const course = document.getElementById('inputCourseTitle').value.trim() || "DOTE5110 Statistical Analysis";
+      const course = document.getElementById('inputCourseTitle').value.trim() || "Presentation Session";
       const presSel = document.getElementById('selectPresRate').value;
       const qaSel = document.getElementById('selectQaTime').value;
-      const peerUrl = (document.getElementById('inputPeerUrl')?.value || '').trim() || "https://forms.gle/bKtEYEEkvUy3F4mt6";
+      const peerUrl = (document.getElementById('inputPeerUrl')?.value || '').trim();
 
       const items = parseRosterInput(raw);
-      if (!items.length) {
-        alert("Please enter at least one group name or paste your Google Sheet CSV.");
-        return;
-      }
 
       state.courseTitle = course;
       state.rawGroupInput = raw;
@@ -1206,7 +1210,17 @@ DataPandas,HAO Chunhui (Nick) ,CHEUNG Kai leuk (Ken),ZHANG Jiamin Cathie,LEE Chu
       document.getElementById('selectPresRate').value = state.isPresProp ? String(state.presRate) : '0';
       document.getElementById('selectQaTime').value = state.isQaProp ? 'prop' : String(state.qaFixed);
       if (document.getElementById('inputPeerUrl')) document.getElementById('inputPeerUrl').value = state.peerUrl;
-      if (document.getElementById('labelPeerUrl')) document.getElementById('labelPeerUrl').textContent = state.peerUrl;
+      const hasForm = Boolean(state.peerUrl);
+      document.getElementById('labelPeerUrl').textContent = state.peerUrl || 'No form link added';
+      document.getElementById('peerFormStatus').textContent = hasForm ? 'Active Form' : 'Not configured';
+      document.getElementById('peerFormStatus').className = hasForm
+        ? 'text-xs px-2.5 py-0.5 rounded-full bg-emerald-950 border border-emerald-800/60 text-emerald-300 font-semibold'
+        : 'text-xs px-2.5 py-0.5 rounded-full bg-slate-800 border border-slate-700 text-slate-400 font-semibold';
+      document.getElementById('peerFormDescription').textContent = hasForm
+        ? 'Students and audience members can use this form to evaluate presentations.'
+        : 'Add a form link in Class Setup to enable sharing and the QR code.';
+      document.getElementById('btnOpenPeerForm').disabled = !hasForm;
+      document.getElementById('btnQrPeerForm').disabled = !hasForm;
 
       renderGroupLists();
       renderRespondentChips();
@@ -1361,16 +1375,6 @@ DataPandas,HAO Chunhui (Nick) ,CHEUNG Kai leuk (Ken),ZHANG Jiamin Cathie,LEE Chu
       }
 
       document.getElementById('btnInitGroups').addEventListener('click', initializeGroupsFromInput);
-      document.getElementById('btnLoadSample').addEventListener('click', () => {
-        document.getElementById('inputCourseTitle').value = "DOTE5110 Statistical Analysis";
-        document.getElementById('inputGroupList').value = DEFAULT_GOOGLE_SHEET_CSV;
-        document.getElementById('selectPresRate').value = "2";
-        document.getElementById('selectQaTime').value = "5";
-        if (document.getElementById('inputPeerUrl')) {
-          document.getElementById('inputPeerUrl').value = "https://forms.gle/bKtEYEEkvUy3F4mt6";
-        }
-      });
-
       document.getElementById('btnOpenPeerForm').addEventListener('click', () => {
         if (state.peerUrl) window.open(state.peerUrl, '_blank');
         else alert("Please set your Peer Evaluation Form URL in setup.");

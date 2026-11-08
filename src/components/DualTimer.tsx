@@ -194,7 +194,9 @@ export const DualTimer: React.FC<DualTimerProps> = ({
                     <Users className="h-3 w-3" />
                     <span>
                       {presTimingMode === 'per_member'
-                        ? `${memberCount} members × ${presMinutesPerMember}m = ${activePresTotalMin}m`
+                        ? membersList.length > 0
+                          ? `${memberCount} members × ${presMinutesPerMember}m = ${activePresTotalMin}m`
+                          : `Default ${activePresTotalMin}m until a group is selected`
                         : `Fixed ${activePresTotalMin}m`}
                     </span>
                   </div>
@@ -298,7 +300,9 @@ export const DualTimer: React.FC<DualTimerProps> = ({
                   <div className="text-[11px] text-emerald-400 font-medium">
                     {qaTimingMode === 'fixed'
                       ? `Fixed ${activeQaTotalMin}m (Class questions)`
-                      : `${memberCount} members × ${qaMinutesPerMember}m = ${activeQaTotalMin}m`}
+                      : membersList.length > 0
+                        ? `${memberCount} members × ${qaMinutesPerMember}m = ${activeQaTotalMin}m`
+                        : `Default ${activeQaTotalMin}m until a group is selected`}
                   </div>
                 </div>
               </div>
@@ -461,7 +465,7 @@ export const DualTimer: React.FC<DualTimerProps> = ({
 
       </div>
 
-      {/* Quick Rate Selectors for DOTE5110 */}
+      {/* Quick rate selectors */}
       <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-800/80 pt-3 text-xs">
         <div className="flex items-center gap-2">
           <span className="text-slate-400 font-semibold">Presentation Rate:</span>
@@ -474,7 +478,7 @@ export const DualTimer: React.FC<DualTimerProps> = ({
                   : 'text-slate-400 hover:text-white'
               }`}
             >
-              2m / member (DOTE5110)
+              2m / member
             </button>
             <button
               onClick={() => onSetPresPerMember(1)}
@@ -518,4 +522,3 @@ export const DualTimer: React.FC<DualTimerProps> = ({
     </section>
   );
 };
-

@@ -1,16 +1,16 @@
 import { SessionState, GroupItem } from '../types';
 
-const STORAGE_KEY = 'dote5110_presenter_session_v5';
+const STORAGE_KEY = 'presentation_facilitator_session_v1';
+const LEGACY_STORAGE_KEY = 'dote5110_presenter_session_v5';
+const LEGACY_ROSTER_HASH = 3562784588;
 
-export const USER_PROVIDED_GOOGLE_SHEET_CSV = `Group Name,Leader,Member 1,Member 2,Member 3,Member 4,Member 5,Member 6,Member 7,Member 8
-ITM Pass,CHAN Chun Ming (Danny),CHAN Chun Ming (Danny),CHOW Sik Hong (Eric),WAN Wing Wai (Michelle),LAM Ka Ho (Danny),Wong Yin Yee (Jess),Lam Kai Yi (Kelly),Zhang Yi Chi(Adam),Wang Shengping (Spencer)
-Group 1,Tan Tsz Ching (Iris),Ng Kei Ming Kevin,Liu Tsun Yee (Matt),"Kan Pok Shing, Harry",CHAN CHUN YIN (Tom),Cheung Ting Fung (Tito),Chan Ka Chun (EricB),Tan Tsz Ching (Iris),
-GIGO,CHAN Hoi Ho (Thomas),Lai Chun Man (Edward),Ho Lok Yiu (Kenix),FUNG Phillis,CHAN Hoi Ho (Thomas),Yeung Chin Wai (Charlotte),"WAN Ka Wing, Daniel",,
-Group 3,Szeto Wing Yan (Queenie),WONG Oi Lam (Tac),Ng Kit Yee (Kit),Chieh Kwong Wing (William),Wong Ho Hay Edgar,Ng Hau Yin (Mandy),Ching Lok Yan (Ada),Szeto Wing Yan (Queenie),
-jager bomb,Cheng Man Hin,Lam Tsz Lok Dennis,Yeung Hoi Ying Daisy,Chan Jian Xi Elvis,Ma Tsz Yan,Lo Chun Hang Leo,Chan Gi Wei Violet,Gao Ying Ying,
-Ctrl + Six,Tsoi Wing Sze (Celia) ,Yung Ching Lam (Kimberly),Li Yuk Yu (Sherena),Tsoi Wing Sze (Celia) ,Lam Ching Wing (Andrea),Wong Wai (Angela),Lai Kit Sum (Kennis),,
-Last but not Beast,Wong Yu Kin Ivan,Law Yu Tung (Sabine),Ho Kai Ching (Matt),LEUNG Yi Kit (Ricky),CHEUNG KWOK LUEN (Anson),LEE KA HONG (Ka-hong),Wong Yu Kin Ivan,WONG Hon Lung (Barron),
-DataPandas,HAO Chunhui (Nick) ,CHEUNG Kai leuk (Ken),ZHANG Jiamin Cathie,LEE Chun Kit (Ivan),WONG IOK SENG (Samuel),HAO Chunhui (Nick) ,Wong Sung Him (Tony),Lam Nga Mei (May),LI Kai Ming (Kasu)`;
+function rosterHash(value: string): number {
+  let hash = 2166136261;
+  for (let i = 0; i < value.length; i++) {
+    hash = Math.imul(hash ^ value.charCodeAt(i), 16777619);
+  }
+  return hash >>> 0;
+}
 
 /**
  * Robust CSV/TSV parser supporting quotes and commas/tabs
@@ -122,12 +122,10 @@ export function parseRosterInput(input: string): GroupItem[] {
   }));
 }
 
-export const INITIAL_GROUPS: GroupItem[] = parseRosterInput(USER_PROVIDED_GOOGLE_SHEET_CSV);
-
 export const INITIAL_STATE: SessionState = {
-  courseTitle: 'DOTE5110 Statistical Analysis',
-  rawGroupInput: USER_PROVIDED_GOOGLE_SHEET_CSV,
-  pendingGroups: INITIAL_GROUPS,
+  courseTitle: 'Presentation Session',
+  rawGroupInput: '',
+  pendingGroups: [],
   presentedGroups: [],
   currentGroup: null,
   currentRespondent: null,
@@ -143,7 +141,7 @@ export const INITIAL_STATE: SessionState = {
   qaMinutes: 5,
   qaMinutesPerMember: 0.5,
 
-  peerEvalFormUrl: 'https://forms.gle/bKtEYEEkvUy3F4mt6',
+  peerEvalFormUrl: '',
   soundEnabled: true,
   volume: 0.8,
   oneMinuteWarning: true,
@@ -151,18 +149,28 @@ export const INITIAL_STATE: SessionState = {
 
 export function loadSessionState(): SessionState {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    const saved = localStorage.getItem(STORAGE_KEY);
+    const raw = saved ?? localStorage.getItem(LEGACY_STORAGE_KEY);
     if (!raw) return INITIAL_STATE;
     const parsed = JSON.parse(raw);
-    const peerUrl =
-      !parsed.peerEvalFormUrl || parsed.peerEvalFormUrl.includes('peer-eval-demo')
-        ? 'https://forms.gle/bKtEYEEkvUy3F4mt6'
-        : parsed.peerEvalFormUrl;
+    if (!saved) {
+      if (parsed.courseTitle === 'DOTE5110 Statistical Analysis') parsed.courseTitle = INITIAL_STATE.courseTitle;
+      if (parsed.peerEvalFormUrl === 'https://forms.gle/bKtEYEEkvUy3F4mt6' || parsed.peerEvalFormUrl?.includes('peer-eval-demo')) {
+        parsed.peerEvalFormUrl = '';
+      }
+      if (rosterHash(parsed.rawGroupInput || '') === LEGACY_ROSTER_HASH) {
+        parsed.rawGroupInput = '';
+        parsed.pendingGroups = [];
+        parsed.presentedGroups = [];
+        parsed.currentGroup = null;
+        parsed.currentRespondent = null;
+        parsed.answeredMembers = [];
+      }
+    }
 
     return {
       ...INITIAL_STATE,
       ...parsed,
-      peerEvalFormUrl: peerUrl,
     };
   } catch (e) {
     console.error('Failed to load session from localStorage', e);

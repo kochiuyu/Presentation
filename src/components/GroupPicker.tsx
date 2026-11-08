@@ -121,10 +121,14 @@ export const GroupPicker: React.FC<GroupPickerProps> = ({
           <div className="flex flex-col items-center text-center">
             <Users className="h-10 w-10 text-slate-600 mb-2" />
             <h3 className="text-xl md:text-2xl font-bold text-slate-300">
-              No Group Selected Yet
+              {totalCount === 0 ? 'Add groups to begin' : 'No Group Selected Yet'}
             </h3>
             <p className="mt-1 text-xs text-slate-500 max-w-md">
-              Click &quot;Draw Next Group&quot; or press <kbd className="rounded bg-slate-800 px-1 py-0.5 font-mono text-[11px] text-slate-300 border border-slate-700">N</kbd> to randomly select without repeating.
+              {totalCount === 0 ? (
+                <>Paste a roster in <a href="#setup-section" className="text-indigo-300 underline">Classroom Setup</a>, then apply the changes.</>
+              ) : (
+                <>Click &quot;Draw Next Group&quot; or press <kbd className="rounded bg-slate-800 px-1 py-0.5 font-mono text-[11px] text-slate-300 border border-slate-700">N</kbd> to randomly select without repeating.</>
+              )}
             </p>
           </div>
         )}
@@ -143,6 +147,7 @@ export const GroupPicker: React.FC<GroupPickerProps> = ({
 
         <button
           onClick={handleConfirmReset}
+          disabled={totalCount === 0}
           className="flex items-center gap-1.5 rounded-xl border border-rose-900/50 bg-rose-950/30 px-4 py-3.5 text-xs font-semibold text-rose-300 hover:bg-rose-900/40 hover:text-white transition"
           title="Reset session so all groups return to pending pool"
         >
@@ -207,7 +212,7 @@ export const GroupPicker: React.FC<GroupPickerProps> = ({
                   );
                 })
               ) : (
-                <li className="py-2 text-center text-slate-600 italic">All groups have presented!</li>
+                <li className="py-2 text-center text-slate-600 italic">{totalCount === 0 ? 'Add groups in Classroom Setup' : 'All groups have presented!'}</li>
               )}
             </ul>
           </div>

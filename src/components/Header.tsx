@@ -46,7 +46,7 @@ export const Header: React.FC<HeaderProps> = ({
           <div>
             <div className="flex items-center gap-2">
               <h1 className="font-bold text-base md:text-lg text-slate-100 tracking-tight leading-tight">
-                {courseTitle || 'DOTE5110 Statistical Analysis'}
+                {courseTitle || 'Presentation Session'}
               </h1>
               <a
                 href="#setup-section"

@@ -8,6 +8,7 @@ interface FormsHubProps {
 
 export const FormsHub: React.FC<FormsHubProps> = ({ peerEvalUrl, onOpenQr }) => {
   const [copied, setCopied] = useState(false);
+  const hasForm = Boolean(peerEvalUrl.trim());
 
   const handleOpenLink = () => {
     if (!peerEvalUrl || peerEvalUrl.trim() === '') {
@@ -41,13 +42,13 @@ export const FormsHub: React.FC<FormsHubProps> = ({ peerEvalUrl, onOpenQr }) => 
               <h2 className="text-lg font-bold text-white">Peer Evaluation Form</h2>
             </div>
           </div>
-          <span className="rounded-full bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-0.5 text-[11px] font-semibold text-emerald-300">
-            Active Form
+          <span className={`rounded-full border px-2.5 py-0.5 text-[11px] font-semibold ${hasForm ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-300' : 'bg-slate-800 border-slate-700 text-slate-400'}`}>
+            {hasForm ? 'Active Form' : 'Not configured'}
           </span>
         </div>
 
         <p className="mt-3 text-xs text-slate-400 leading-relaxed">
-          Students and audience members use this form to grade each presentation and submit peer evaluations during class.
+          {hasForm ? 'Students and audience members can use this form to evaluate presentations.' : 'Add a form link in Classroom Setup to enable sharing and the QR code.'}
         </p>
 
         {/* Dedicated Peer Evaluation Form Showcase Card */}
@@ -61,7 +62,7 @@ export const FormsHub: React.FC<FormsHubProps> = ({ peerEvalUrl, onOpenQr }) => 
                 <h4 className="text-sm font-bold text-slate-100 flex items-center gap-1.5">
                   <span>Student Peer Evaluation Form</span>
                 </h4>
-                <a
+                {hasForm ? <a
                   href={peerEvalUrl}
                   target="_blank"
                   rel="noopener noreferrer"
@@ -69,7 +70,7 @@ export const FormsHub: React.FC<FormsHubProps> = ({ peerEvalUrl, onOpenQr }) => 
                   title="Open URL"
                 >
                   {peerEvalUrl}
-                </a>
+                </a> : <span className="text-xs text-slate-500 mt-0.5 block">No form link added</span>}
               </div>
             </div>
           </div>
@@ -78,7 +79,7 @@ export const FormsHub: React.FC<FormsHubProps> = ({ peerEvalUrl, onOpenQr }) => 
           <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-2">
             <button
               onClick={handleOpenLink}
-              disabled={!peerEvalUrl}
+              disabled={!hasForm}
               className="flex items-center justify-center gap-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 px-4 py-2.5 text-xs font-bold text-white shadow-md shadow-indigo-600/30 transition active:scale-[0.99] disabled:opacity-40"
             >
               <span>Open Form in Tab</span>
@@ -87,7 +88,7 @@ export const FormsHub: React.FC<FormsHubProps> = ({ peerEvalUrl, onOpenQr }) => 
 
             <button
               onClick={() => onOpenQr('Student Peer Evaluation Form', peerEvalUrl)}
-              disabled={!peerEvalUrl}
+              disabled={!hasForm}
               className="flex items-center justify-center gap-2 rounded-xl border border-slate-700 bg-slate-800 hover:bg-slate-700 px-4 py-2.5 text-xs font-bold text-slate-100 transition active:scale-[0.99] disabled:opacity-40"
               title="Show enlarged QR code for classroom mobile scanning"
             >
@@ -102,7 +103,8 @@ export const FormsHub: React.FC<FormsHubProps> = ({ peerEvalUrl, onOpenQr }) => 
             </span>
             <button
               onClick={handleCopy}
-              className="inline-flex items-center gap-1 text-slate-400 hover:text-slate-200 transition"
+              disabled={!hasForm}
+              className="inline-flex items-center gap-1 text-slate-400 hover:text-slate-200 transition disabled:opacity-40"
               title="Copy link to clipboard"
             >
               {copied ? (
@@ -124,7 +126,7 @@ export const FormsHub: React.FC<FormsHubProps> = ({ peerEvalUrl, onOpenQr }) => 
       <div className="mt-4 rounded-xl bg-slate-950/60 border border-slate-800/80 p-3 text-[11px] text-slate-400 flex items-center gap-2">
         <span className="text-base">💡</span>
         <span>
-          Tip: Click <strong>Project QR Code</strong> or press <kbd className="px-1 py-0.5 rounded bg-slate-800 font-mono text-[10px] text-slate-300 border border-slate-700">P</kbd> in Projector View to project the QR code onto the hall screen.
+          {hasForm ? <>Tip: Click <strong>Project QR Code</strong> or press <kbd className="px-1 py-0.5 rounded bg-slate-800 font-mono text-[10px] text-slate-300 border border-slate-700">P</kbd> in Projector View to project the QR code onto the hall screen.</> : 'The form link is optional. Group selection and timers work without it.'}
         </span>
       </div>
     </section>

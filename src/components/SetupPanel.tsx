@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { Settings, Sparkles, Check, ListChecks, Calculator } from 'lucide-react';
-import { parseRosterInput, USER_PROVIDED_GOOGLE_SHEET_CSV } from '../utils/storage';
+import { Settings, Check, ListChecks, Calculator } from 'lucide-react';
+import { parseRosterInput } from '../utils/storage';
 import { GroupItem, TimingMode } from '../types';
 
 interface SetupPanelProps {
@@ -70,13 +70,8 @@ export const SetupPanel: React.FC<SetupPanelProps> = ({
   const parsedItems = parseRosterInput(rawText);
 
   const handleInit = () => {
-    if (parsedItems.length === 0) {
-      alert('Please enter at least one group name or paste your Google Sheet CSV/roster.');
-      return;
-    }
-
     onInitialize({
-      courseTitle: courseTitle.trim() || 'DOTE5110 Statistical Analysis',
+      courseTitle: courseTitle.trim() || 'Presentation Session',
       rawGroupInput: rawText,
       pendingGroups: parsedItems,
       presTimingMode,
@@ -85,7 +80,7 @@ export const SetupPanel: React.FC<SetupPanelProps> = ({
       qaTimingMode,
       qaMinutes: Number(qaFixed) || 5,
       qaMinutesPerMember: Number(qaRate) || 0.5,
-      peerEvalFormUrl: peerUrl.trim() || 'https://forms.gle/bKtEYEEkvUy3F4mt6',
+      peerEvalFormUrl: peerUrl.trim(),
     });
 
     setJustSaved(true);
@@ -94,24 +89,9 @@ export const SetupPanel: React.FC<SetupPanelProps> = ({
 
   const handleQuickSaveTitle = () => {
     if (onUpdateCourseTitle) {
-      onUpdateCourseTitle(courseTitle.trim() || 'DOTE5110 Statistical Analysis');
+      onUpdateCourseTitle(courseTitle.trim() || 'Presentation Session');
       setTitleSaved(true);
       setTimeout(() => setTitleSaved(false), 2000);
-    }
-  };
-
-  const handleLoadSample = () => {
-    setCourseTitle('DOTE5110 Statistical Analysis');
-    setRawText(USER_PROVIDED_GOOGLE_SHEET_CSV);
-    setPresTimingMode('per_member');
-    setPresRate(2);
-    setPresFixed(14);
-    setQaTimingMode('fixed');
-    setQaFixed(5);
-    setQaRate(0.5);
-    setPeerUrl('https://forms.gle/bKtEYEEkvUy3F4mt6');
-    if (onUpdateCourseTitle) {
-      onUpdateCourseTitle('DOTE5110 Statistical Analysis');
     }
   };
 
@@ -128,14 +108,6 @@ export const SetupPanel: React.FC<SetupPanelProps> = ({
           </div>
         </div>
 
-        <button
-          onClick={handleLoadSample}
-          className="flex items-center gap-1.5 text-xs font-semibold text-indigo-400 hover:text-indigo-300 transition"
-          title="Reset to DOTE5110 defaults"
-        >
-          <Sparkles className="h-3.5 w-3.5" />
-          <span>Reset DOTE5110 Roster</span>
-        </button>
       </div>
 
       <div className="mt-4 space-y-4">
@@ -159,7 +131,7 @@ export const SetupPanel: React.FC<SetupPanelProps> = ({
                   onUpdateCourseTitle(e.target.value);
                 }
               }}
-              placeholder="e.g. DOTE5110 Statistical Analysis"
+              placeholder="Course or session name"
               className="flex-1 rounded-xl border border-slate-800 bg-slate-950 px-3.5 py-2 text-xs text-slate-200 placeholder:text-slate-600 focus:border-indigo-500 focus:outline-none"
             />
             {onUpdateCourseTitle && (
@@ -275,7 +247,7 @@ export const SetupPanel: React.FC<SetupPanelProps> = ({
                       : 'border-slate-800 bg-slate-900 text-slate-400 hover:text-white'
                   }`}
                 >
-                  ⏱ Fixed Duration (Default 5m)
+                  ⏱ Fixed Duration
                 </button>
                 <button
                   type="button"
@@ -369,19 +341,19 @@ export const SetupPanel: React.FC<SetupPanelProps> = ({
             type="url"
             value={peerUrl}
             onChange={(e) => setPeerUrl(e.target.value)}
-            placeholder="https://forms.gle/bKtEYEEkvUy3F4mt6"
+            placeholder="https://forms.gle/your-form"
             className="w-full rounded-xl border border-slate-800 bg-slate-950 px-3.5 py-2.5 text-xs text-slate-200 placeholder:text-slate-600 focus:border-indigo-500 focus:outline-none font-mono"
           />
           <p className="mt-1 text-[11px] text-slate-500 flex items-center gap-1.5">
             <span>Configured URL:</span>
-            <span className="text-slate-400 font-mono truncate">{peerUrl || 'https://forms.gle/bKtEYEEkvUy3F4mt6'}</span>
+            <span className="text-slate-400 font-mono truncate">{peerUrl || 'Not configured'}</span>
           </p>
         </div>
 
         {/* Save button */}
         <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
           <p className="text-xs text-slate-500">
-            Changes persist automatically in localStorage for DOTE5110 Statistical Analysis.
+            Changes are saved in this browser.
           </p>
 
           <button

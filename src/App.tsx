@@ -280,7 +280,9 @@ export default function App() {
   const handleTriggerGroupDraw = useCallback(() => {
     if (isDrawingGroup) return;
     if (session.pendingGroups.length === 0) {
-      alert('All groups have presented in this session! Click "Reset All" to start a new class round.');
+      alert(session.presentedGroups.length === 0
+        ? 'Add a roster in Classroom Setup before drawing a group.'
+        : 'All groups have presented in this session! Click "Reset All" to start a new class round.');
       return;
     }
 
@@ -734,4 +736,3 @@ export default function App() {
     </div>
   );
 }
-
