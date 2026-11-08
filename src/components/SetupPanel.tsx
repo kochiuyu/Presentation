@@ -116,7 +116,7 @@ export const SetupPanel: React.FC<SetupPanelProps> = ({
         {/* Course title (Allow changes at the bottom) */}
         <div>
           <div className="flex items-center justify-between mb-1">
-            <label className="block text-xs font-semibold text-slate-300">
+            <label htmlFor="course-title" className="block text-xs font-semibold text-slate-300">
               Course Title / Presentation Session Name
             </label>
             <span className="text-[11px] text-indigo-300 font-medium">
@@ -125,6 +125,7 @@ export const SetupPanel: React.FC<SetupPanelProps> = ({
           </div>
           <div className="flex items-center gap-2">
             <input
+              id="course-title"
               type="text"
               value={courseTitle}
               onChange={(e) => {
@@ -168,6 +169,7 @@ export const SetupPanel: React.FC<SetupPanelProps> = ({
               <div className="flex gap-2">
                 <button
                   type="button"
+                  aria-pressed={presTimingMode === 'per_member'}
                   onClick={() => setPresTimingMode('per_member')}
                   className={`flex-1 py-1.5 px-2 rounded-lg border text-xs font-medium transition ${
                     presTimingMode === 'per_member'
@@ -179,6 +181,7 @@ export const SetupPanel: React.FC<SetupPanelProps> = ({
                 </button>
                 <button
                   type="button"
+                  aria-pressed={presTimingMode === 'fixed'}
                   onClick={() => setPresTimingMode('fixed')}
                   className={`flex-1 py-1.5 px-2 rounded-lg border text-xs font-medium transition ${
                     presTimingMode === 'fixed'
@@ -209,6 +212,7 @@ export const SetupPanel: React.FC<SetupPanelProps> = ({
                       </button>
                     ))}
                     <input
+                      aria-label="Presentation minutes per member"
                       type="number"
                       step="0.5"
                       min="0.5"
@@ -223,6 +227,7 @@ export const SetupPanel: React.FC<SetupPanelProps> = ({
                 <div className="flex items-center gap-2 pt-1">
                   <span className="text-slate-400">Fixed Total Minutes:</span>
                   <input
+                    aria-label="Fixed presentation minutes"
                     type="number"
                     min="1"
                     max="60"
@@ -242,6 +247,7 @@ export const SetupPanel: React.FC<SetupPanelProps> = ({
               <div className="flex gap-2">
                 <button
                   type="button"
+                  aria-pressed={qaTimingMode === 'fixed'}
                   onClick={() => setQaTimingMode('fixed')}
                   className={`flex-1 py-1.5 px-2 rounded-lg border text-xs font-medium transition ${
                     qaTimingMode === 'fixed'
@@ -253,6 +259,7 @@ export const SetupPanel: React.FC<SetupPanelProps> = ({
                 </button>
                 <button
                   type="button"
+                  aria-pressed={qaTimingMode === 'per_member'}
                   onClick={() => setQaTimingMode('per_member')}
                   className={`flex-1 py-1.5 px-2 rounded-lg border text-xs font-medium transition ${
                     qaTimingMode === 'per_member'
@@ -283,6 +290,7 @@ export const SetupPanel: React.FC<SetupPanelProps> = ({
                       </button>
                     ))}
                     <input
+                      aria-label="Fixed Q&A minutes"
                       type="number"
                       min="1"
                       max="30"
@@ -296,6 +304,7 @@ export const SetupPanel: React.FC<SetupPanelProps> = ({
                 <div className="flex items-center gap-2 pt-1">
                   <span className="text-slate-400">Minutes per member:</span>
                   <input
+                    aria-label="Q&A minutes per member"
                     type="number"
                     step="0.5"
                     min="0.5"
@@ -313,7 +322,7 @@ export const SetupPanel: React.FC<SetupPanelProps> = ({
         {/* Group roster textarea */}
         <div>
           <div className="mb-1 flex items-center justify-between">
-            <label className="text-xs font-semibold text-slate-300">
+            <label htmlFor="group-roster" className="text-xs font-semibold text-slate-300">
               Student Groups & Roster <span className="text-slate-500 font-normal">(Paste Google Sheets CSV, TSV, or plain names)</span>
             </label>
             <span className="text-[11px] font-mono text-indigo-400">
@@ -321,6 +330,7 @@ export const SetupPanel: React.FC<SetupPanelProps> = ({
             </span>
           </div>
           <textarea
+            id="group-roster"
             rows={6}
             value={rawText}
             onChange={(e) => setRawText(e.target.value)}
@@ -332,7 +342,7 @@ export const SetupPanel: React.FC<SetupPanelProps> = ({
         {/* Peer Evaluation Google Form URL */}
         <div>
           <div className="flex items-center justify-between mb-1">
-            <label className="block text-xs font-semibold text-slate-300">
+            <label htmlFor="peer-form-url" className="block text-xs font-semibold text-slate-300">
               Peer Evaluation Google Form URL
             </label>
             <span className="text-[11px] text-indigo-400 font-medium">
@@ -340,6 +350,7 @@ export const SetupPanel: React.FC<SetupPanelProps> = ({
             </span>
           </div>
           <input
+            id="peer-form-url"
             type="url"
             value={peerUrl}
             onChange={(e) => setPeerUrl(e.target.value)}
@@ -370,3 +381,4 @@ export const SetupPanel: React.FC<SetupPanelProps> = ({
     </section>
   );
 };
+
