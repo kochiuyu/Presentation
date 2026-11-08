@@ -654,6 +654,7 @@ export default function App() {
     handleResetQaTimer,
     isShortcutsOpen,
     qrModalData.isOpen,
+    isProjectorOpen,
   ]);
 
   return (
