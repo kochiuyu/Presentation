@@ -637,9 +637,36 @@ export function generateStandaloneHtml(): string {
       return result;
     }
 
+    function splitCsvRecords(input) {
+      const records = [];
+      let current = '';
+      let inQuotes = false;
+
+      for (let i = 0; i < input.length; i++) {
+        const char = input[i];
+        if (char === '"') {
+          if (inQuotes && input[i + 1] === '"') {
+            current += '""';
+            i++;
+            continue;
+          }
+          inQuotes = !inQuotes;
+        }
+        if ((char.charCodeAt(0) === 10 || char.charCodeAt(0) === 13) && !inQuotes) {
+          if (char.charCodeAt(0) === 13 && input.charCodeAt(i + 1) === 10) i++;
+          if (current.trim()) records.push(current.trim());
+          current = '';
+          continue;
+        }
+        current += char;
+      }
+      if (current.trim()) records.push(current.trim());
+      return records;
+    }
+
     function parseRosterInput(input) {
       if (!input || !input.trim()) return [];
-      const rawLines = input.split(/\\r?\\n/).map(l => l.trim()).filter(Boolean);
+      const rawLines = splitCsvRecords(input);
       if (rawLines.length === 0) return [];
 
       const firstLine = rawLines[0].toLowerCase();

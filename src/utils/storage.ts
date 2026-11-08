@@ -43,10 +43,37 @@ function parseCsvRow(row: string, delimiter: string = ','): string[] {
 /**
  * Parses Google Sheets CSV / TSV or newline-separated group names
  */
+function splitCsvRecords(input: string): string[] {
+  const records: string[] = [];
+  let current = '';
+  let inQuotes = false;
+
+  for (let i = 0; i < input.length; i++) {
+    const char = input[i];
+    if (char === '"') {
+      if (inQuotes && input[i + 1] === '"') {
+        current += '""';
+        i++;
+        continue;
+      }
+      inQuotes = !inQuotes;
+    }
+    if ((char.charCodeAt(0) === 10 || char.charCodeAt(0) === 13) && !inQuotes) {
+      if (char.charCodeAt(0) === 13 && input.charCodeAt(i + 1) === 10) i++;
+      if (current.trim()) records.push(current.trim());
+      current = '';
+      continue;
+    }
+    current += char;
+  }
+  if (current.trim()) records.push(current.trim());
+  return records;
+}
+
 export function parseRosterInput(input: string): GroupItem[] {
   if (!input || !input.trim()) return [];
 
-  const rawLines = input.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+  const rawLines = splitCsvRecords(input);
   if (rawLines.length === 0) return [];
 
   const firstLine = rawLines[0].toLowerCase();
