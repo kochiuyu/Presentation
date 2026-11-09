@@ -122,7 +122,7 @@ export const SetupPanel: React.FC<SetupPanelProps> = ({
   };
 
   return (
-    <section id="setup-section" className="rounded-2xl border border-slate-800 bg-slate-900 p-5 md:p-6 shadow-xl scroll-mt-20">
+    <section id="setup-section" className="rounded-2xl border border-slate-800 bg-slate-900 p-5 md:p-6 shadow-xl scroll-mt-36 sm:scroll-mt-20">
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-800 pb-4">
         <div className="flex items-center gap-2">
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-sky-500/10 text-sky-400 border border-sky-500/20">

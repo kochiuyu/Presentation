@@ -336,7 +336,7 @@ export function generateStandaloneHtml(): string {
       </section>
 
       <!-- Setup & Initialization Panel (7 cols) -->
-      <section id="setupSection" class="lg:col-span-7 bg-slate-900 border border-slate-800 rounded-2xl p-5 md:p-6 shadow-xl scroll-mt-20">
+      <section id="setupSection" class="lg:col-span-7 bg-slate-900 border border-slate-800 rounded-2xl p-5 md:p-6 shadow-xl scroll-mt-36 sm:scroll-mt-20">
         <div class="flex items-center justify-between border-b border-slate-800 pb-3 mb-4">
           <div>
             <span class="text-xs uppercase tracking-wider font-bold text-sky-400">Class Setup & Timings</span>
