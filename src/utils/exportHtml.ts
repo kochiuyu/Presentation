@@ -54,6 +54,7 @@ export function generateStandaloneHtml(): string {
       <button id="btnTestSound" class="px-3 py-1.5 rounded-xl text-xs font-semibold border border-slate-700 bg-slate-800 hover:bg-slate-700 transition" title="Test lecture hall chime">
         Test Bell
       </button>
+      <button id="btnClassWebsiteQr" class="px-3 py-1.5 rounded-xl text-xs font-semibold border border-slate-700 bg-slate-800 hover:bg-slate-700 text-slate-200 transition">Website QR</button>
       <button id="btnProjector" class="px-4 py-1.5 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-500 text-white shadow-md shadow-indigo-600/30 transition flex items-center gap-1.5">
         <span>📽️</span>
         <span>Projector Mode [P]</span>
@@ -445,8 +446,9 @@ export function generateStandaloneHtml(): string {
         <h2 id="projCourseTitle" class="text-xl md:text-2xl font-black text-slate-200">Presentation Session</h2>
       </div>
       <div class="flex items-center gap-3">
+        <button id="btnProjClassWebsiteQr" class="px-4 py-2 rounded-xl text-xs font-semibold bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-100 border border-indigo-500/50">Website QR</button>
         <button id="btnProjQrToggle" class="px-4 py-2 rounded-xl text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700">
-          📱 Show Student QR
+          Form QR
         </button>
         <button id="btnCloseProjector" class="px-4 py-2 rounded-xl text-xs font-bold bg-rose-600/80 hover:bg-rose-500 text-white">
           Exit Projector [Esc]
@@ -566,12 +568,13 @@ export function generateStandaloneHtml(): string {
 
   <!-- QR Code Modal -->
   <div id="qrModal" role="dialog" aria-modal="true" aria-labelledby="qrModalTitle" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-xs flex items-center justify-center p-4">
-    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 max-w-sm w-full text-center shadow-2xl">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 sm:p-6 max-h-[95vh] overflow-y-auto max-w-lg w-full text-center shadow-2xl">
       <h3 id="qrModalTitle" class="text-lg font-bold text-white mb-1">Scan Form Link</h3>
-      <p id="qrModalUrl" class="text-xs text-slate-400 mb-4 truncate"></p>
-      <div class="bg-white p-4 rounded-xl flex items-center justify-center mx-auto w-56 h-56 shadow-inner">
+      <p id="qrModalUrl" class="text-xs text-slate-400 mb-4 break-all"></p>
+      <div class="bg-white p-3 sm:p-4 rounded-xl flex items-center justify-center mx-auto aspect-square w-[min(78vw,56vh,420px)] shadow-inner">
         <img id="qrImage" src="" alt="QR Code" class="w-full h-full object-contain">
       </div>
+      <p id="qrModalDescription" class="mt-3 text-xs text-slate-400"></p>
       <div class="mt-5 flex gap-2">
         <a id="qrOpenExternal" href="#" target="_blank" rel="noopener noreferrer" class="flex-1 py-2 px-3 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-500 text-white">Open in Tab</a>
         <button id="btnCloseQrModal" class="py-2 px-4 rounded-xl text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200">Close</button>
@@ -581,6 +584,7 @@ export function generateStandaloneHtml(): string {
 
   <!-- Web Audio Synthesizer & Logic -->
   <script>
+    const CLASS_WEBSITE_URL = 'https://kochiuyu.github.io/Presentation/';
     let audioCtx = null;
     function getAudioCtx() {
       if (!audioCtx) {
@@ -1537,15 +1541,18 @@ export function generateStandaloneHtml(): string {
       previousQrFocus = null;
     }
 
-    function openQrModal(title, url) {
+    function openQrModal(title, url, description) {
       if (!isSafeFormUrl(url)) {
-        alert("Enter a full http:// or https:// form link in setup.");
+        alert("A full http:// or https:// link is required.");
         return;
       }
       document.getElementById('qrModalTitle').textContent = title;
       document.getElementById('qrModalUrl').textContent = url;
+      document.getElementById('qrModalDescription').textContent = description || 'Students can scan this from their seats with any phone camera.';
       document.getElementById('qrOpenExternal').href = url;
-      StandaloneQRCode.toDataURL(url, { width: 250, margin: 2 }, (error, dataUrl) => {
+      document.getElementById('qrImage').src = '';
+      document.getElementById('qrImage').alt = 'Scan to open ' + title;
+      StandaloneQRCode.toDataURL(url, { width: 640, margin: 2 }, (error, dataUrl) => {
         if (error) {
           console.error('Could not generate the QR code', error);
           return;
@@ -1661,6 +1668,8 @@ export function generateStandaloneHtml(): string {
       document.getElementById('btnProjector').addEventListener('click', () => {
         document.getElementById('projectorModal').classList.remove('hidden');
       });
+      document.getElementById('btnClassWebsiteQr').addEventListener('click', () => openQrModal('Class website', CLASS_WEBSITE_URL, 'Students can open the website on their own devices. Group selection and timers do not sync to their screens.'));
+      document.getElementById('btnProjClassWebsiteQr').addEventListener('click', () => openQrModal('Class website', CLASS_WEBSITE_URL, 'Students can open the website on their own devices. Group selection and timers do not sync to their screens.'));
       document.getElementById('btnCloseProjector').addEventListener('click', () => {
         document.getElementById('projectorModal').classList.add('hidden');
       });

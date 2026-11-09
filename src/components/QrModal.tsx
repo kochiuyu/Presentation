@@ -8,25 +8,29 @@ interface QrModalProps {
   onClose: () => void;
   title: string;
   url: string;
+  description?: string;
 }
 
-export const QrModal: React.FC<QrModalProps> = ({ isOpen, onClose, title, url }) => {
+export const QrModal: React.FC<QrModalProps> = ({ isOpen, onClose, title, url, description }) => {
   const dialogRef = useDialogFocus(isOpen);
   const [dataUrl, setDataUrl] = useState<string>('');
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     if (!isOpen || !url) return;
+    let current = true;
+    setDataUrl('');
     QRCode.toDataURL(url, {
-      width: 320,
+      width: 640,
       margin: 2,
       color: {
         dark: '#0f172a',
         light: '#ffffff',
       },
     })
-      .then((res) => setDataUrl(res))
+      .then((res) => { if (current) setDataUrl(res); })
       .catch((err) => console.error('Failed to generate QR', err));
+    return () => { current = false; };
   }, [isOpen, url]);
 
   if (!isOpen) return null;
@@ -39,7 +43,7 @@ export const QrModal: React.FC<QrModalProps> = ({ isOpen, onClose, title, url })
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-xs p-4">
-      <div ref={dialogRef} role="dialog" aria-modal="true" aria-labelledby="qr-dialog-title" tabIndex={-1} className="relative w-full max-w-sm rounded-2xl border border-slate-800 bg-slate-900 p-6 text-center text-slate-100 shadow-2xl">
+      <div ref={dialogRef} role="dialog" aria-modal="true" aria-labelledby="qr-dialog-title" tabIndex={-1} className="relative max-h-[95vh] w-full max-w-lg overflow-y-auto rounded-2xl border border-slate-800 bg-slate-900 p-5 text-center text-slate-100 shadow-2xl sm:p-6">
         <button
           onClick={onClose}
           className="absolute right-4 top-4 rounded-lg p-1 text-slate-400 hover:bg-slate-800 hover:text-white transition"
@@ -49,11 +53,11 @@ export const QrModal: React.FC<QrModalProps> = ({ isOpen, onClose, title, url })
         </button>
 
         <h3 id="qr-dialog-title" className="text-lg font-bold text-white">{title}</h3>
-        <p className="mt-1 text-xs text-slate-400 truncate max-w-[280px] mx-auto">{url}</p>
+        <p className="mx-auto mt-1 break-all text-xs text-slate-400">{url}</p>
 
-        <div className="mt-4 flex items-center justify-center rounded-2xl bg-white p-4 shadow-inner mx-auto w-64 h-64">
+        <div className="mx-auto mt-4 flex aspect-square w-[min(78vw,56vh,420px)] items-center justify-center rounded-2xl bg-white p-3 shadow-inner sm:p-4">
           {dataUrl ? (
-            <img src={dataUrl} alt="QR Code" className="h-full w-full object-contain" />
+            <img src={dataUrl} alt={`Scan to open ${title}`} className="h-full w-full object-contain" />
           ) : (
             <div className="flex h-full w-full items-center justify-center text-xs text-slate-500">
               Generating QR Code...
@@ -62,7 +66,7 @@ export const QrModal: React.FC<QrModalProps> = ({ isOpen, onClose, title, url })
         </div>
 
         <p className="mt-3 text-xs text-slate-400">
-          Students can scan this from their seats with any phone camera
+          {description || 'Students can scan this from their seats with any phone camera.'}
         </p>
 
         <div className="mt-4 grid grid-cols-2 gap-2">
