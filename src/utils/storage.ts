@@ -126,7 +126,7 @@ export function parseRosterInput(input: string): GroupItem[] {
       });
     }
 
-    if (groups.length > 0) return groups;
+    return groups;
   }
 
   // Fallback: standard line-by-line

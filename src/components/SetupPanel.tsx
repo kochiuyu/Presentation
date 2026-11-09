@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Settings, Check, ListChecks, Calculator } from 'lucide-react';
 import { parseRosterInput } from '../utils/storage';
 import { GroupItem, TimingMode } from '../types';
+import { RosterEditor } from './RosterEditor';
 
 interface SetupPanelProps {
   courseTitle: string;
@@ -176,6 +177,8 @@ export const SetupPanel: React.FC<SetupPanelProps> = ({
           </div>
         </div>
 
+        <RosterEditor value={rawText} onChange={setRawText} />
+
         {/* Dynamic Timing Configuration Box */}
         <div className="rounded-xl border border-slate-800/80 bg-slate-950/70 p-3.5 space-y-3">
           <div className="flex items-center gap-2 text-xs font-bold text-indigo-300 border-b border-slate-800/80 pb-2">
@@ -340,26 +343,6 @@ export const SetupPanel: React.FC<SetupPanelProps> = ({
               )}
             </div>
           </div>
-        </div>
-
-        {/* Group roster textarea */}
-        <div>
-          <div className="mb-1 flex items-center justify-between">
-            <label htmlFor="group-roster" className="text-xs font-semibold text-slate-300">
-              Student Groups & Roster <span className="text-slate-500 font-normal">(Paste Google Sheets CSV, TSV, or plain names)</span>
-            </label>
-            <span className="text-[11px] font-mono text-indigo-400">
-              {parsedItems.length} valid {parsedItems.length === 1 ? 'group' : 'groups'} detected
-            </span>
-          </div>
-          <textarea
-            id="group-roster"
-            rows={6}
-            value={rawText}
-            onChange={(e) => setRawText(e.target.value)}
-            placeholder="Group Name,Leader,Member 1,Member 2...&#10;or one group per line"
-            className="w-full rounded-xl border border-slate-800 bg-slate-950 p-3 text-xs text-slate-200 font-mono placeholder:text-slate-600 focus:border-indigo-500 focus:outline-none leading-relaxed"
-          />
         </div>
 
         {/* Peer Evaluation Google Form URL */}

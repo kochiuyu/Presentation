@@ -350,6 +350,45 @@ export function generateStandaloneHtml(): string {
             <input id="inputCourseTitle" type="text" class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-slate-200 focus:border-indigo-500 focus:outline-none" value="Presentation Session">
           </div>
 
+          <div class="rounded-xl border border-indigo-500/30 bg-indigo-950/20 p-3.5 space-y-3">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <div>
+                <h3 class="text-sm font-bold text-slate-100">Student groups & roster</h3>
+                <p class="text-[11px] text-slate-400">Add groups one at a time or paste a list from a spreadsheet.</p>
+              </div>
+              <span id="detectedCountBadge" role="status" class="rounded-full border border-indigo-500/30 bg-indigo-950/40 px-2.5 py-1 text-[11px] font-semibold text-indigo-300">0 groups ready</span>
+            </div>
+            <div class="rounded-lg border border-slate-800 bg-slate-900 p-3 space-y-3">
+              <div class="grid gap-3 sm:grid-cols-2">
+                <label class="block text-xs font-semibold text-slate-300">Group name *
+                  <input id="quickGroupName" type="text" placeholder="e.g. Group A" class="mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2.5 text-sm text-slate-100 placeholder:text-slate-500 focus:border-indigo-500 focus:outline-none">
+                </label>
+                <label class="block text-xs font-semibold text-slate-300">Leader (optional)
+                  <input id="quickGroupLeader" type="text" placeholder="e.g. Alex" class="mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2.5 text-sm text-slate-100 placeholder:text-slate-500 focus:border-indigo-500 focus:outline-none">
+                </label>
+              </div>
+              <label class="block text-xs font-semibold text-slate-300">Student names (optional)
+                <textarea id="quickGroupMembers" rows="2" placeholder="One name per line, or separate names with commas" class="mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2.5 text-sm text-slate-100 placeholder:text-slate-500 focus:border-indigo-500 focus:outline-none"></textarea>
+              </label>
+              <div class="flex flex-wrap items-center justify-between gap-2">
+                <p class="text-[11px] text-slate-500">The leader counts as a student. Groups without names use the default timer length.</p>
+                <div class="flex gap-2">
+                  <button id="btnCancelGroupEdit" type="button" class="hidden rounded-lg border border-slate-700 px-3 py-2 text-xs font-semibold text-slate-300">Cancel</button>
+                  <button id="btnAddGroup" type="button" class="rounded-lg bg-indigo-600 px-3 py-2 text-xs font-bold text-white hover:bg-indigo-500">Add group</button>
+                </div>
+              </div>
+              <p id="quickGroupError" role="alert" class="hidden text-xs font-semibold text-rose-300"></p>
+            </div>
+            <div id="quickGroupPreview" aria-label="Roster preview" class="space-y-2"></div>
+            <details class="rounded-lg border border-slate-800 bg-slate-900 p-3">
+              <summary class="cursor-pointer text-xs font-semibold text-indigo-300">Paste spreadsheet or edit raw list</summary>
+              <label for="inputGroupList" class="mt-3 block text-xs font-semibold text-slate-300">Paste Google Sheets cells, CSV, or one group per line</label>
+              <textarea id="inputGroupList" rows="5" class="mt-1 w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-slate-200 font-mono focus:border-indigo-500 focus:outline-none leading-relaxed"></textarea>
+              <p class="mt-1 text-[11px] text-slate-400">Include column headings when pasting a table. The groups above update as you type.</p>
+            </details>
+            <p class="text-[11px] text-slate-400">Review the roster, then choose <strong>Apply Changes & Save</strong> below.</p>
+          </div>
+
           <!-- Proportional Timing Configuration -->
           <div class="p-3.5 rounded-xl border border-slate-800 bg-slate-950/70 space-y-3">
             <div class="text-xs font-bold text-indigo-300">
@@ -376,16 +415,6 @@ export function generateStandaloneHtml(): string {
                 </select>
               </div>
             </div>
-          </div>
-
-          <div>
-            <div class="flex items-center justify-between mb-1">
-              <label for="inputGroupList" class="text-xs font-semibold text-slate-300">
-                Student Groups & Roster <span class="text-slate-500 font-normal">(Paste Google Sheets CSV, TSV, or plain names)</span>
-              </label>
-              <span id="detectedCountBadge" class="text-[11px] font-mono text-indigo-400">0 groups detected</span>
-            </div>
-            <textarea id="inputGroupList" rows="5" class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-slate-200 font-mono focus:border-indigo-500 focus:outline-none leading-relaxed"></textarea>
           </div>
 
           <div>
@@ -707,10 +736,119 @@ export function generateStandaloneHtml(): string {
             members: uniqueMembers
           });
         }
-        if (groups.length > 0) return groups;
+        return groups;
       }
 
       return rawLines.map(line => ({ name: line }));
+    }
+
+    let quickEditingIndex = null;
+    function clearQuickGroupForm() {
+      document.getElementById('quickGroupName').value = '';
+      document.getElementById('quickGroupLeader').value = '';
+      document.getElementById('quickGroupMembers').value = '';
+      document.getElementById('quickGroupError').classList.add('hidden');
+      quickEditingIndex = null;
+      document.getElementById('btnAddGroup').textContent = 'Add group';
+      document.getElementById('btnCancelGroupEdit').classList.add('hidden');
+    }
+
+    function serializeQuickGroups(groups) {
+      if (!groups.length) return '';
+      const memberLists = groups.map(group => (group.members || []).filter(member =>
+        member.toLowerCase() !== (group.leader || '').toLowerCase()));
+      const count = Math.max(1, ...memberLists.map(list => list.length));
+      const header = ['Group', 'Leader', ...Array.from({ length: count }, (_, index) => 'Member ' + (index + 1))];
+      const quote = value => '"' + String(value).replaceAll('"', '""') + '"';
+      return [header, ...groups.map((group, index) => [group.name, group.leader || '', ...memberLists[index]])]
+        .map(row => row.map(quote).join(','))
+        .join(String.fromCharCode(10));
+    }
+
+    function renderRosterDraft() {
+      const groups = parseRosterInput(document.getElementById('inputGroupList').value);
+      document.getElementById('detectedCountBadge').textContent = groups.length + (groups.length === 1 ? ' group ready' : ' groups ready');
+      const preview = document.getElementById('quickGroupPreview');
+      preview.replaceChildren();
+      if (!groups.length) {
+        const empty = document.createElement('p');
+        empty.className = 'rounded-lg border border-dashed border-slate-700 px-3 py-4 text-center text-xs text-slate-400';
+        empty.textContent = 'No groups yet. Add your first group above.';
+        preview.appendChild(empty);
+        return;
+      }
+      groups.forEach((group, index) => {
+        const row = document.createElement('div');
+        row.className = 'flex flex-wrap items-center justify-between gap-2 rounded-lg border border-slate-800 bg-slate-900 px-3 py-2';
+        const info = document.createElement('div');
+        const title = document.createElement('p');
+        title.className = 'text-xs font-bold text-slate-100';
+        title.textContent = group.name;
+        const detail = document.createElement('p');
+        detail.className = 'text-[11px] text-slate-400';
+        const count = (group.members || []).length;
+        detail.textContent = (count ? count + (count === 1 ? ' student' : ' students') : 'No students listed') + (group.leader ? ' · Leader: ' + group.leader : '');
+        info.append(title, detail);
+        const actions = document.createElement('div');
+        actions.className = 'flex items-center gap-1';
+        const edit = document.createElement('button');
+        edit.type = 'button';
+        edit.className = 'rounded-lg px-2 py-1 text-xs font-semibold text-indigo-300 hover:bg-slate-800';
+        edit.textContent = 'Edit';
+        edit.setAttribute('aria-label', 'Edit ' + group.name);
+        edit.addEventListener('click', () => {
+          quickEditingIndex = index;
+          document.getElementById('quickGroupName').value = group.name;
+          document.getElementById('quickGroupLeader').value = group.leader || '';
+          document.getElementById('quickGroupMembers').value = (group.members || []).filter(member => member.toLowerCase() !== (group.leader || '').toLowerCase()).join(String.fromCharCode(10));
+          document.getElementById('btnAddGroup').textContent = 'Save group';
+          document.getElementById('btnCancelGroupEdit').classList.remove('hidden');
+          document.getElementById('quickGroupName').focus();
+        });
+        const remove = document.createElement('button');
+        remove.type = 'button';
+        remove.className = 'rounded-lg px-2 py-1 text-xs font-semibold text-rose-400 hover:bg-rose-950/40';
+        remove.textContent = 'Remove';
+        remove.setAttribute('aria-label', 'Remove ' + group.name);
+        remove.addEventListener('click', () => {
+          document.getElementById('inputGroupList').value = serializeQuickGroups(groups.filter((_, item) => item !== index));
+          clearQuickGroupForm();
+          renderRosterDraft();
+        });
+        actions.append(edit, remove);
+        row.append(info, actions);
+        preview.appendChild(row);
+      });
+    }
+
+    function saveQuickGroup() {
+      const nameField = document.getElementById('quickGroupName');
+      const name = nameField.value.replace(/\\s+/g, ' ').trim();
+      const groups = parseRosterInput(document.getElementById('inputGroupList').value);
+      const error = document.getElementById('quickGroupError');
+      if (!name || groups.some((group, index) => index !== quickEditingIndex && group.name.toLowerCase() === name.toLowerCase())) {
+        error.textContent = name ? 'A group with this name is already in the roster.' : 'Enter a group name.';
+        error.classList.remove('hidden');
+        nameField.focus();
+        return;
+      }
+      const leader = document.getElementById('quickGroupLeader').value.trim();
+      const seen = new Set();
+      const members = document.getElementById('quickGroupMembers').value.split(/[,\\n\\r\\t]+/).map(value => value.trim()).filter(value => {
+        const key = value.toLowerCase();
+        if (!key || seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
+      if (leader && !seen.has(leader.toLowerCase())) members.unshift(leader);
+      const next = [...groups];
+      const group = { name, leader: leader || undefined, members };
+      if (quickEditingIndex === null) next.push(group);
+      else next[quickEditingIndex] = group;
+      document.getElementById('inputGroupList').value = serializeQuickGroups(next);
+      clearQuickGroupForm();
+      renderRosterDraft();
+      nameField.focus();
     }
 
     const STORAGE_KEY = 'presentation_facilitator_data_v1';
@@ -1478,6 +1616,13 @@ export function generateStandaloneHtml(): string {
       loadState();
       loadClocks();
       syncUI();
+      renderRosterDraft();
+      document.getElementById('inputGroupList').addEventListener('input', renderRosterDraft);
+      document.getElementById('btnAddGroup').addEventListener('click', saveQuickGroup);
+      document.getElementById('btnCancelGroupEdit').addEventListener('click', clearQuickGroupForm);
+      document.getElementById('quickGroupName').addEventListener('keydown', event => {
+        if (event.key === 'Enter') { event.preventDefault(); saveQuickGroup(); }
+      });
       if (presRunning) {
         document.getElementById('textPlayPres').textContent = 'Pause Pres (Space)';
         document.getElementById('iconPlayPres').textContent = '⏸';
