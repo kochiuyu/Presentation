@@ -20,6 +20,7 @@ import { SessionState, GroupItem, TimingMode, computePresentationMinutes, comput
 import confetti from 'canvas-confetti';
 
 const CLOCK_KEY = 'presentation_facilitator_clocks_v1';
+const THEME_KEY = 'presentation_facilitator_theme_v1';
 
 function loadClocks(groupId: string | null) {
   try {
@@ -39,6 +40,13 @@ function loadClocks(groupId: string | null) {
 }
 
 export default function App() {
+  const [theme, setTheme] = useState<'dark' | 'light'>(() => {
+    try {
+      return localStorage.getItem(THEME_KEY) === 'light' ? 'light' : 'dark';
+    } catch {
+      return 'dark';
+    }
+  });
   const [session, setSession] = useState<SessionState>(() => loadSessionState());
   const [setupVersion, setSetupVersion] = useState(0);
   const [savedClocks] = useState(() => loadClocks(session.currentGroup?.id ?? null));
@@ -95,6 +103,15 @@ export default function App() {
   const groupDrawGenerationRef = useRef(0);
   const hasWarnedPresRef = useRef<boolean>(false);
   const hasWarnedQaRef = useRef<boolean>(false);
+
+  useEffect(() => {
+    document.documentElement.classList.toggle('theme-light', theme === 'light');
+    try {
+      localStorage.setItem(THEME_KEY, theme);
+    } catch {
+      // Theme selection still works when browser storage is unavailable.
+    }
+  }, [theme]);
 
   const exportBackup = () => createBackup(
     { ...session, currentRespondent, answeredMembers },
@@ -723,6 +740,8 @@ export default function App() {
       {/* Top Header */}
       <Header
         courseTitle={session.courseTitle}
+        theme={theme}
+        onToggleTheme={() => setTheme((current) => current === 'dark' ? 'light' : 'dark')}
         soundEnabled={session.soundEnabled}
         onToggleSound={() => setSession((prev) => ({ ...prev, soundEnabled: !prev.soundEnabled }))}
         onOpenProjector={() => setIsProjectorOpen(true)}

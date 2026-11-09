@@ -193,7 +193,7 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
   };
 
   return (
-    <div ref={dialogRef} role="dialog" aria-modal="true" aria-label="Projector view" tabIndex={-1} className="fixed inset-0 z-50 flex flex-col justify-between bg-slate-950 p-4 sm:p-6 md:p-8 text-white select-none overflow-y-auto">
+    <div ref={dialogRef} role="dialog" aria-modal="true" aria-label="Projector view" data-projector tabIndex={-1} className="fixed inset-0 z-50 flex flex-col justify-between bg-slate-950 p-4 sm:p-6 md:p-8 text-white select-none overflow-y-auto">
       {/* Top Projector Bar */}
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-800/80 pb-3">
         <div className="flex items-center gap-3">

@@ -15,6 +15,7 @@ export function generateStandaloneHtml(): string {
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Presentation Facilitator</title>
   <meta name="description" content="Classroom presentation manager with separated presentation & Q&A timers, proportional group-size duration, random group picker, random Q&A member draw, Google Forms hub, Web Audio chime, and projector mode.">
+  <script>try { if (localStorage.getItem('presentation_facilitator_theme_v1') === 'light') document.documentElement.classList.add('theme-light'); } catch {}</script>
   <style>${standaloneStyles}</style>
   <script>${confettiSource}</script>
   <script>${qrCodeSource}</script>
@@ -42,7 +43,10 @@ export function generateStandaloneHtml(): string {
         </div>
       </div>
     </div>
-    <div class="flex items-center gap-2">
+    <div class="flex flex-wrap items-center gap-2">
+      <button id="btnThemeToggle" type="button" class="px-3 py-1.5 rounded-xl text-xs font-semibold border border-slate-700 bg-slate-800 hover:bg-slate-700 transition flex items-center gap-1.5" aria-label="Switch to light mode" title="Switch to light mode">
+        <span id="themeIcon" aria-hidden="true">☀</span><span id="themeText">Light mode</span>
+      </button>
       <button id="btnSoundToggle" class="px-3 py-1.5 rounded-xl text-xs font-semibold border border-slate-700 bg-slate-800 hover:bg-slate-700 transition flex items-center gap-1.5">
         <span id="soundIcon">🔔</span>
         <span id="soundText">Chime On</span>
@@ -405,7 +409,7 @@ export function generateStandaloneHtml(): string {
   </main>
 
   <!-- Fullscreen Projector Mode Overlay (Dual Clocks + Q&A Respondent Banner) -->
-  <div id="projectorModal" class="hidden fixed inset-0 z-50 bg-slate-950 flex flex-col justify-between p-6 md:p-10 transition-all">
+  <div id="projectorModal" data-projector class="hidden fixed inset-0 z-50 bg-slate-950 flex flex-col justify-between p-6 md:p-10 transition-all">
     <div class="flex items-center justify-between border-b border-slate-800/80 pb-3">
       <div class="flex items-center gap-3">
         <span class="px-3 py-1 rounded-lg bg-indigo-500/20 text-indigo-400 text-xs font-black tracking-widest uppercase">PROJECTOR VIEW</span>
@@ -1457,6 +1461,20 @@ export function generateStandaloneHtml(): string {
     });
 
     document.addEventListener('DOMContentLoaded', () => {
+      const themeButton = document.getElementById('btnThemeToggle');
+      const syncThemeButton = () => {
+        const isLight = document.documentElement.classList.contains('theme-light');
+        document.getElementById('themeIcon').textContent = isLight ? '☾' : '☀';
+        document.getElementById('themeText').textContent = isLight ? 'Dark mode' : 'Light mode';
+        themeButton.setAttribute('aria-label', isLight ? 'Switch to dark mode' : 'Switch to light mode');
+        themeButton.title = isLight ? 'Switch to dark mode' : 'Switch to light mode';
+      };
+      syncThemeButton();
+      themeButton.addEventListener('click', () => {
+        const isLight = document.documentElement.classList.toggle('theme-light');
+        try { localStorage.setItem('presentation_facilitator_theme_v1', isLight ? 'light' : 'dark'); } catch {}
+        syncThemeButton();
+      });
       loadState();
       loadClocks();
       syncUI();

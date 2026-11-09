@@ -1,10 +1,12 @@
 import React from 'react';
-import { Volume2, VolumeX, Maximize2, Keyboard, Download, Music, Sparkles, Settings } from 'lucide-react';
+import { Volume2, VolumeX, Maximize2, Keyboard, Download, Music, Sparkles, Settings, Sun, Moon } from 'lucide-react';
 import { playChime } from '../utils/audio';
 import { generateStandaloneHtml } from '../utils/exportHtml';
 
 interface HeaderProps {
   courseTitle: string;
+  theme: 'dark' | 'light';
+  onToggleTheme: () => void;
   soundEnabled: boolean;
   onToggleSound: () => void;
   onOpenProjector: () => void;
@@ -13,6 +15,8 @@ interface HeaderProps {
 
 export const Header: React.FC<HeaderProps> = ({
   courseTitle,
+  theme,
+  onToggleTheme,
   soundEnabled,
   onToggleSound,
   onOpenProjector,
@@ -68,7 +72,17 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
 
         {/* Action Controls */}
-        <div className="flex items-center gap-2">
+        <div className="flex w-full flex-wrap items-center gap-1 sm:w-auto sm:gap-2">
+          <button
+            type="button"
+            onClick={onToggleTheme}
+            className="flex h-8 items-center gap-1.5 rounded-xl border border-slate-700 bg-slate-800 px-2.5 text-xs font-semibold text-slate-300 hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+            aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+            title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+          >
+            {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+            <span className="hidden xl:inline">{theme === 'dark' ? 'Light' : 'Dark'}</span>
+          </button>
           <a
             href="#setup-section"
             aria-label="Classroom Setup"
@@ -128,7 +142,8 @@ export const Header: React.FC<HeaderProps> = ({
             title="Open Fullscreen Projector Mode (P)"
           >
             <Maximize2 className="h-3.5 w-3.5" />
-            <span>Projector [P]</span>
+            <span className="sm:hidden">Projector</span>
+            <span className="hidden sm:inline">Projector [P]</span>
           </button>
         </div>
       </div>
