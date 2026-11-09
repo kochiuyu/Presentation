@@ -791,6 +791,7 @@ export function generateStandaloneHtml(): string {
     let hasWarnedQa = false;
 
     let isShufflingRespondent = false;
+    let respondentDrawGeneration = 0;
     let masterInterval = null;
     let isShuffling = false;
     let groupDrawGeneration = 0;
@@ -1044,6 +1045,7 @@ export function generateStandaloneHtml(): string {
 
       getAudioCtx();
       isShufflingRespondent = true;
+      const drawGeneration = ++respondentDrawGeneration;
       const uncalled = group.members.filter(m => !state.answeredMembers.includes(m));
       const pool = uncalled.length > 0 ? uncalled : group.members;
 
@@ -1052,6 +1054,7 @@ export function generateStandaloneHtml(): string {
       const maxIter = 18;
 
       function step() {
+        if (drawGeneration !== respondentDrawGeneration || state.currentGroup !== group) return;
         const randIdx = Math.floor(Math.random() * pool.length);
         const temp = pool[randIdx];
         document.getElementById('respondentNameTag').textContent = "🎲 " + temp;
@@ -1082,6 +1085,11 @@ export function generateStandaloneHtml(): string {
       step();
     }
 
+    function cancelRespondentDraw() {
+      respondentDrawGeneration++;
+      isShufflingRespondent = false;
+    }
+
     function renderRespondentChips() {
       const container = document.getElementById('chipsContainer');
       const group = state.currentGroup;
@@ -1108,6 +1116,7 @@ export function generateStandaloneHtml(): string {
     }
 
     function selectRespondentDirectly(name) {
+      cancelRespondentDraw();
       state.currentRespondent = name;
       if (!state.answeredMembers.includes(name)) state.answeredMembers.push(name);
       saveState();
@@ -1126,6 +1135,7 @@ export function generateStandaloneHtml(): string {
 
       getAudioCtx();
       isShuffling = true;
+      cancelRespondentDraw();
       const drawGeneration = ++groupDrawGeneration;
       const currentEl = document.getElementById('currentGroupName');
       const projNameEl = document.getElementById('projGroupName');
@@ -1308,6 +1318,7 @@ export function generateStandaloneHtml(): string {
       state.courseTitle = course;
       state.rawGroupInput = raw;
       if (rosterChanged) {
+        cancelRespondentDraw();
         state.pendingGroups = [...items];
         state.presentedGroups = [];
         state.currentGroup = null;
@@ -1335,6 +1346,11 @@ export function generateStandaloneHtml(): string {
 
       saveState();
       syncUI(rosterChanged);
+      if (rosterChanged) {
+        document.getElementById('respondentNameTag').textContent = 'Press A or click below to pick';
+        document.getElementById('projRespondentName').textContent = 'Press A to Draw Member';
+        document.getElementById('answeredCountLabel').textContent = '0 answered';
+      }
       if (!rosterChanged) {
         if (oldPresMode !== state.isPresProp || oldPresMins !== getPresMins()) resetPres();
         if (oldQaMode !== state.isQaProp || oldQaMins !== getQaMins()) resetQa();
@@ -1539,6 +1555,7 @@ export function generateStandaloneHtml(): string {
         if (confirm("Reset all groups and timers? All groups will return to pending pool for a fresh session.")) {
           groupDrawGeneration++;
           isShuffling = false;
+          cancelRespondentDraw();
           let all = parseRosterInput(state.rawGroupInput);
           if (!all || !all.length) {
             const seen = new Set();

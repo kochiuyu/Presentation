@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   Minimize2,
   Play,
@@ -94,6 +94,22 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
   const [candidateRespondentName, setCandidateRespondentName] = useState<string>('');
   const [showPoolDrawer, setShowPoolDrawer] = useState<boolean>(true);
   const dialogRef = useDialogFocus(isOpen);
+  const drawGenerationRef = useRef(0);
+  const drawTimeoutRef = useRef<number | null>(null);
+  const groupRef = useRef(currentGroup);
+  groupRef.current = currentGroup;
+
+  useEffect(() => {
+    drawGenerationRef.current++;
+    if (drawTimeoutRef.current !== null) window.clearTimeout(drawTimeoutRef.current);
+    drawTimeoutRef.current = null;
+    setIsShufflingRespondent(false);
+    setCandidateRespondentName('');
+    return () => {
+      drawGenerationRef.current++;
+      if (drawTimeoutRef.current !== null) window.clearTimeout(drawTimeoutRef.current);
+    };
+  }, [currentGroup, isOpen]);
 
   if (!isOpen) return null;
 
@@ -132,11 +148,14 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
     const pool = uncalled.length > 0 ? uncalled : membersList;
 
     setIsShufflingRespondent(true);
+    const drawGeneration = ++drawGenerationRef.current;
+    const drawnGroup = currentGroup;
     let speed = 40;
     let iterations = 0;
     const maxIterations = 20;
 
     const step = () => {
+      if (drawGeneration !== drawGenerationRef.current || groupRef.current !== drawnGroup) return;
       const randIdx = Math.floor(Math.random() * pool.length);
       const temp = pool[randIdx];
       setCandidateRespondentName(temp);
@@ -145,8 +164,9 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
 
       if (iterations < maxIterations) {
         speed += 14;
-        setTimeout(step, speed);
+        drawTimeoutRef.current = window.setTimeout(step, speed);
       } else {
+        drawTimeoutRef.current = null;
         const picked = pool[randIdx];
         setIsShufflingRespondent(false);
         setCandidateRespondentName('');

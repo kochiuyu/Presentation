@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Play, Pause, RotateCcw, Plus, Minus, AlertTriangle, Users, MessageSquareQuote, Presentation, Dice5, CheckCircle2 } from 'lucide-react';
 import { GroupItem, TimingMode } from '../types';
 import { playTick, playFanfare } from '../utils/audio';
@@ -66,6 +66,26 @@ export const DualTimer: React.FC<DualTimerProps> = ({
 }) => {
   const [isShufflingRespondent, setIsShufflingRespondent] = useState(false);
   const [candidateName, setCandidateName] = useState<string>('');
+  const drawGenerationRef = useRef(0);
+  const drawTimeoutRef = useRef<number | null>(null);
+  const groupRef = useRef(currentGroup);
+  groupRef.current = currentGroup;
+
+  const cancelRespondentDraw = () => {
+    drawGenerationRef.current++;
+    if (drawTimeoutRef.current !== null) window.clearTimeout(drawTimeoutRef.current);
+    drawTimeoutRef.current = null;
+    setIsShufflingRespondent(false);
+    setCandidateName('');
+  };
+
+  useEffect(() => {
+    cancelRespondentDraw();
+    return () => {
+      drawGenerationRef.current++;
+      if (drawTimeoutRef.current !== null) window.clearTimeout(drawTimeoutRef.current);
+    };
+  }, [currentGroup]);
 
   const membersList = currentGroup?.members && currentGroup.members.length > 0
     ? currentGroup.members
@@ -111,11 +131,14 @@ export const DualTimer: React.FC<DualTimerProps> = ({
     const pool = uncalled.length > 0 ? uncalled : membersList;
 
     setIsShufflingRespondent(true);
+    const drawGeneration = ++drawGenerationRef.current;
+    const drawnGroup = currentGroup;
     let speed = 40;
     let iterations = 0;
     const maxIterations = 20;
 
     const step = () => {
+      if (drawGeneration !== drawGenerationRef.current || groupRef.current !== drawnGroup) return;
       const randIdx = Math.floor(Math.random() * pool.length);
       const temp = pool[randIdx];
       setCandidateName(temp);
@@ -124,8 +147,9 @@ export const DualTimer: React.FC<DualTimerProps> = ({
 
       if (iterations < maxIterations) {
         speed += 14;
-        setTimeout(step, speed);
+        drawTimeoutRef.current = window.setTimeout(step, speed);
       } else {
+        drawTimeoutRef.current = null;
         const picked = pool[randIdx];
         setIsShufflingRespondent(false);
         setCandidateName('');
@@ -352,7 +376,7 @@ export const DualTimer: React.FC<DualTimerProps> = ({
                 </span>
                 {answeredMembers.length > 0 && (
                   <button
-                    onClick={onResetRespondents}
+                    onClick={() => { cancelRespondentDraw(); onResetRespondents(); }}
                     className="text-[10px] text-slate-500 hover:text-slate-300 underline"
                   >
                     Reset picks
@@ -398,7 +422,7 @@ export const DualTimer: React.FC<DualTimerProps> = ({
                     return (
                       <button
                         key={idx}
-                        onClick={() => onSelectRespondent(m)}
+                        onClick={() => { cancelRespondentDraw(); onSelectRespondent(m); }}
                         className={`text-[10px] px-1.5 py-0.5 rounded border transition ${
                           isCurrent
                             ? 'bg-emerald-600 border-emerald-400 text-white font-bold ring-1 ring-emerald-400'
