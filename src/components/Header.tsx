@@ -138,7 +138,7 @@ export const Header: React.FC<HeaderProps> = ({
           {/* Projector Mode */}
           <button
             onClick={onOpenProjector}
-            className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 px-4 py-1.5 text-xs font-bold text-white shadow-md shadow-indigo-600/30 hover:from-indigo-500 hover:to-violet-500 active:scale-95 transition"
+            className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 px-3 sm:px-4 py-1.5 text-xs font-bold text-white shadow-md shadow-indigo-600/30 hover:from-indigo-500 hover:to-violet-500 active:scale-95 transition"
             title="Open Fullscreen Projector Mode (P)"
           >
             <Maximize2 className="h-3.5 w-3.5" />
