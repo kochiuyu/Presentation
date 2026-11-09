@@ -342,7 +342,7 @@ export function generateStandaloneHtml(): string {
 
         <div class="space-y-4">
           <div>
-            <label class="block text-xs font-semibold text-slate-300 mb-1">Course Title</label>
+            <label for="inputCourseTitle" class="block text-xs font-semibold text-slate-300 mb-1">Course Title</label>
             <input id="inputCourseTitle" type="text" class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-slate-200 focus:border-indigo-500 focus:outline-none" value="Presentation Session">
           </div>
 
@@ -353,7 +353,7 @@ export function generateStandaloneHtml(): string {
             </div>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
               <div>
-                <span class="block text-slate-300 font-semibold mb-1">Presentation Phase:</span>
+                <label for="selectPresRate" class="block text-slate-300 font-semibold mb-1">Presentation Phase:</label>
                 <select id="selectPresRate" class="w-full px-2.5 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-white text-xs font-mono">
                   <option value="2">2 min per member (Default)</option>
                   <option value="1">1 min per member</option>
@@ -363,7 +363,7 @@ export function generateStandaloneHtml(): string {
               </div>
 
               <div>
-                <span class="block text-slate-300 font-semibold mb-1">Q&A Phase:</span>
+                <label for="selectQaTime" class="block text-slate-300 font-semibold mb-1">Q&A Phase:</label>
                 <select id="selectQaTime" class="w-full px-2.5 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-white text-xs font-mono">
                   <option value="5">Fixed 5 min (Default)</option>
                   <option value="3">Fixed 3 min</option>
@@ -376,7 +376,7 @@ export function generateStandaloneHtml(): string {
 
           <div>
             <div class="flex items-center justify-between mb-1">
-              <label class="text-xs font-semibold text-slate-300">
+              <label for="inputGroupList" class="text-xs font-semibold text-slate-300">
                 Student Groups & Roster <span class="text-slate-500 font-normal">(Paste Google Sheets CSV, TSV, or plain names)</span>
               </label>
               <span id="detectedCountBadge" class="text-[11px] font-mono text-indigo-400">0 groups detected</span>
@@ -386,7 +386,7 @@ export function generateStandaloneHtml(): string {
 
           <div>
             <div class="flex items-center justify-between mb-1">
-              <label class="block text-xs font-semibold text-slate-300">Peer Evaluation Google Form URL</label>
+              <label for="inputPeerUrl" class="block text-xs font-semibold text-slate-300">Peer Evaluation Google Form URL</label>
               <span class="text-[11px] text-indigo-400 font-medium">Audience Feedback Form</span>
             </div>
             <input id="inputPeerUrl" type="url" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-xs text-slate-200 font-mono focus:border-indigo-500 focus:outline-none" placeholder="https://forms.gle/your-form">
