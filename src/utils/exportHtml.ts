@@ -350,6 +350,34 @@ export function generateStandaloneHtml(): string {
             <input id="inputCourseTitle" type="text" class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-slate-200 focus:border-indigo-500 focus:outline-none" value="Presentation Session">
           </div>
 
+          <!-- Proportional Timing Configuration -->
+          <div class="p-3.5 rounded-xl border border-slate-800 bg-slate-950/70 space-y-3">
+            <div class="text-xs font-bold text-indigo-300">
+              ⚡ Timer Limits (Proportional to Group Size vs Fixed)
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+              <div>
+                <label for="selectPresRate" class="block text-slate-300 font-semibold mb-1">Presentation Phase:</label>
+                <select id="selectPresRate" class="w-full px-2.5 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-white text-xs font-mono">
+                  <option value="2">2 min per member (Default)</option>
+                  <option value="1">1 min per member</option>
+                  <option value="1.5">1.5 min per member</option>
+                  <option value="0">Fixed 10 min total</option>
+                </select>
+              </div>
+
+              <div>
+                <label for="selectQaTime" class="block text-slate-300 font-semibold mb-1">Q&A Phase:</label>
+                <select id="selectQaTime" class="w-full px-2.5 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-white text-xs font-mono">
+                  <option value="5">Fixed 5 min (Default)</option>
+                  <option value="3">Fixed 3 min</option>
+                  <option value="2">Fixed 2 min</option>
+                  <option value="prop">Proportional (0.5m/member)</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
           <div class="rounded-xl border border-indigo-500/30 bg-indigo-950/20 p-3.5 space-y-3">
             <div class="flex flex-wrap items-center justify-between gap-2">
               <div>
@@ -387,34 +415,6 @@ export function generateStandaloneHtml(): string {
               <p class="mt-1 text-[11px] text-slate-400">Include column headings when pasting a table. The groups above update as you type.</p>
             </details>
             <p class="text-[11px] text-slate-400">Review the roster, then choose <strong>Apply Changes & Save</strong> below.</p>
-          </div>
-
-          <!-- Proportional Timing Configuration -->
-          <div class="p-3.5 rounded-xl border border-slate-800 bg-slate-950/70 space-y-3">
-            <div class="text-xs font-bold text-indigo-300">
-              ⚡ Timer Limits (Proportional to Group Size vs Fixed)
-            </div>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
-              <div>
-                <label for="selectPresRate" class="block text-slate-300 font-semibold mb-1">Presentation Phase:</label>
-                <select id="selectPresRate" class="w-full px-2.5 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-white text-xs font-mono">
-                  <option value="2">2 min per member (Default)</option>
-                  <option value="1">1 min per member</option>
-                  <option value="1.5">1.5 min per member</option>
-                  <option value="0">Fixed 10 min total</option>
-                </select>
-              </div>
-
-              <div>
-                <label for="selectQaTime" class="block text-slate-300 font-semibold mb-1">Q&A Phase:</label>
-                <select id="selectQaTime" class="w-full px-2.5 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-white text-xs font-mono">
-                  <option value="5">Fixed 5 min (Default)</option>
-                  <option value="3">Fixed 3 min</option>
-                  <option value="2">Fixed 2 min</option>
-                  <option value="prop">Proportional (0.5m/member)</option>
-                </select>
-              </div>
-            </div>
           </div>
 
           <div>

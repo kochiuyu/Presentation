@@ -811,14 +811,14 @@ export default function App() {
 
         {/* Bottom Section: Forms Hub & Setup Roster */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          <div className="order-2 lg:order-1 lg:col-span-5">
+          <div className="lg:col-span-5">
             <FormsHub
               peerEvalUrl={session.peerEvalFormUrl}
               onOpenQr={(title, url) => setQrModalData({ isOpen: true, title, url })}
             />
           </div>
 
-          <div className="order-1 lg:order-2 lg:col-span-7">
+          <div className="lg:col-span-7">
             <SetupPanel
               key={setupVersion}
               courseTitle={session.courseTitle}

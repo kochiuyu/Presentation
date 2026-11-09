@@ -177,8 +177,6 @@ export const SetupPanel: React.FC<SetupPanelProps> = ({
           </div>
         </div>
 
-        <RosterEditor value={rawText} onChange={setRawText} />
-
         {/* Dynamic Timing Configuration Box */}
         <div className="rounded-xl border border-slate-800/80 bg-slate-950/70 p-3.5 space-y-3">
           <div className="flex items-center gap-2 text-xs font-bold text-indigo-300 border-b border-slate-800/80 pb-2">
@@ -344,6 +342,8 @@ export const SetupPanel: React.FC<SetupPanelProps> = ({
             </div>
           </div>
         </div>
+
+        <RosterEditor value={rawText} onChange={setRawText} />
 
         {/* Peer Evaluation Google Form URL */}
         <div>
