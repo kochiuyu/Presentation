@@ -54,7 +54,6 @@ export function generateStandaloneHtml(): string {
       <button id="btnTestSound" class="px-3 py-1.5 rounded-xl text-xs font-semibold border border-slate-700 bg-slate-800 hover:bg-slate-700 transition" title="Test lecture hall chime">
         Test Bell
       </button>
-      <button id="btnClassWebsiteQr" class="px-3 py-1.5 rounded-xl text-xs font-semibold border border-slate-700 bg-slate-800 hover:bg-slate-700 text-slate-200 transition">Website QR</button>
       <button id="btnProjector" class="px-4 py-1.5 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-500 text-white shadow-md shadow-indigo-600/30 transition flex items-center gap-1.5">
         <span>📽️</span>
         <span>Projector Mode [P]</span>
@@ -446,7 +445,6 @@ export function generateStandaloneHtml(): string {
         <h2 id="projCourseTitle" class="text-xl md:text-2xl font-black text-slate-200">Presentation Session</h2>
       </div>
       <div class="flex items-center gap-3">
-        <button id="btnProjClassWebsiteQr" class="px-4 py-2 rounded-xl text-xs font-semibold bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-100 border border-indigo-500/50">Website QR</button>
         <button id="btnProjQrToggle" class="px-4 py-2 rounded-xl text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700">
           Form QR
         </button>
@@ -584,7 +582,6 @@ export function generateStandaloneHtml(): string {
 
   <!-- Web Audio Synthesizer & Logic -->
   <script>
-    const CLASS_WEBSITE_URL = 'https://kochiuyu.github.io/Presentation/';
     let audioCtx = null;
     function getAudioCtx() {
       if (!audioCtx) {
@@ -1668,8 +1665,6 @@ export function generateStandaloneHtml(): string {
       document.getElementById('btnProjector').addEventListener('click', () => {
         document.getElementById('projectorModal').classList.remove('hidden');
       });
-      document.getElementById('btnClassWebsiteQr').addEventListener('click', () => openQrModal('Class website', CLASS_WEBSITE_URL, 'Students can open the website on their own devices. Group selection and timers do not sync to their screens.'));
-      document.getElementById('btnProjClassWebsiteQr').addEventListener('click', () => openQrModal('Class website', CLASS_WEBSITE_URL, 'Students can open the website on their own devices. Group selection and timers do not sync to their screens.'));
       document.getElementById('btnCloseProjector').addEventListener('click', () => {
         document.getElementById('projectorModal').classList.add('hidden');
       });

@@ -58,7 +58,6 @@ interface ProjectorViewProps {
   onSelectRespondent: (name: string) => void;
 
   onOpenQr: () => void;
-  onOpenClassQr: () => void;
 }
 
 export const ProjectorView: React.FC<ProjectorViewProps> = ({
@@ -90,7 +89,6 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
   soundEnabled,
   onSelectRespondent,
   onOpenQr,
-  onOpenClassQr,
 }) => {
   const [isShufflingRespondent, setIsShufflingRespondent] = useState(false);
   const [candidateRespondentName, setCandidateRespondentName] = useState<string>('');
@@ -221,14 +219,6 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
             <Users className="h-3.5 w-3.5 text-amber-400" />
             <span>Pool ({pendingGroups.length} Left)</span>
             {showPoolDrawer ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
-          </button>
-
-          <button
-            onClick={onOpenClassQr}
-            className="flex items-center gap-1.5 rounded-xl border border-indigo-500/50 bg-indigo-500/20 px-3.5 py-1.5 text-xs font-bold text-indigo-100 hover:bg-indigo-500/30 transition"
-          >
-            <QrCode className="h-3.5 w-3.5" />
-            <span>Website QR</span>
           </button>
 
           {/* Peer Eval QR */}

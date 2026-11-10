@@ -21,7 +21,6 @@ import confetti from 'canvas-confetti';
 
 const CLOCK_KEY = 'presentation_facilitator_clocks_v1';
 const THEME_KEY = 'presentation_facilitator_theme_v1';
-const CLASS_WEBSITE_URL = 'https://kochiuyu.github.io/Presentation/';
 
 function loadClocks(groupId: string | null) {
   try {
@@ -746,12 +745,6 @@ export default function App() {
         soundEnabled={session.soundEnabled}
         onToggleSound={() => setSession((prev) => ({ ...prev, soundEnabled: !prev.soundEnabled }))}
         onOpenProjector={() => setIsProjectorOpen(true)}
-        onOpenClassQr={() => setQrModalData({
-          isOpen: true,
-          title: 'Class website',
-          url: CLASS_WEBSITE_URL,
-          description: 'Students can open the website on their own devices. Group selection and timers do not sync to their screens.',
-        })}
         onOpenShortcuts={() => setIsShortcutsOpen(true)}
       />
 
@@ -891,12 +884,6 @@ export default function App() {
             alert('Please configure a Peer Evaluation Form URL first in the setup panel.');
           }
         }}
-        onOpenClassQr={() => setQrModalData({
-          isOpen: true,
-          title: 'Class website',
-          url: CLASS_WEBSITE_URL,
-          description: 'Students can open the website on their own devices. Group selection and timers do not sync to their screens.',
-        })}
       />
 
       <QrModal

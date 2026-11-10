@@ -1,5 +1,5 @@
 import React from 'react';
-import { Volume2, VolumeX, Maximize2, Keyboard, Download, Music, Sparkles, Settings, Sun, Moon, QrCode } from 'lucide-react';
+import { Volume2, VolumeX, Maximize2, Keyboard, Download, Music, Sparkles, Settings, Sun, Moon } from 'lucide-react';
 import { playChime } from '../utils/audio';
 import { generateStandaloneHtml } from '../utils/exportHtml';
 
@@ -10,7 +10,6 @@ interface HeaderProps {
   soundEnabled: boolean;
   onToggleSound: () => void;
   onOpenProjector: () => void;
-  onOpenClassQr: () => void;
   onOpenShortcuts: () => void;
 }
 
@@ -21,7 +20,6 @@ export const Header: React.FC<HeaderProps> = ({
   soundEnabled,
   onToggleSound,
   onOpenProjector,
-  onOpenClassQr,
   onOpenShortcuts,
 }) => {
   const handleTestChime = () => {
@@ -125,16 +123,6 @@ export const Header: React.FC<HeaderProps> = ({
           >
             <Download className="h-3.5 w-3.5 text-indigo-400" />
             <span className="hidden md:inline">Download HTML</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={onOpenClassQr}
-            className="flex items-center gap-1.5 rounded-xl border border-slate-700 bg-slate-800 px-3 py-1.5 text-xs font-semibold text-slate-200 hover:bg-slate-700 transition"
-            title="Show the class website QR code for students"
-          >
-            <QrCode className="h-4 w-4 text-indigo-400" />
-            <span>Website QR</span>
           </button>
 
           {/* Shortcuts Info */}
